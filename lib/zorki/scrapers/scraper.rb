@@ -131,6 +131,8 @@ module Zorki
       # Go to the home page
       visit("/")
 
+
+      fill_in("email", with: ENV["FB_EMAIL"])
       fill_in("Password", with: ENV["FB_PW"])
       click_button("Log In")
       sleep 10
