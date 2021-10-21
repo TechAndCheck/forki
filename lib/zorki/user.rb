@@ -26,6 +26,7 @@ module Zorki
 
     private
 
+    # More next week
     def initialize(hash = {})
       @name = hash[:name]
       # @username = hash[:username]

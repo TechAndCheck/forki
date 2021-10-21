@@ -23,17 +23,16 @@ module Zorki
       # visit "https://www.facebook.com/ILMFOrg/photos/a.207535503185392/905395720066030"
       visit url
 
-
-      s=5  # block notifications
       num_comments = find_num_comments
       num_shares = find_num_shares
       num_views = find_num_views
       reactions = find_reactions
       has_video = ! num_views.nil?
-      s = 3
 
+      # If a Facebook post has video content, we load the mobile version of it and extract the video url
+      # Unfortunately, the desktop version has a blob link that's too much trouble to mess with
       if has_video
-        mobile_url = media_url.sub("www", "m")
+        mobile_url = url.sub("www", "m")
         visit mobile_url
         video_div = all("div").find { |div| (!div["data-store"].nil?) && div["data-store"].include?("videoID") }
         video_url = JSON.parse(video_div["data-store"])["src"]
@@ -48,27 +47,28 @@ module Zorki
         image_file_name = Zorki.retrieve_media(image_url)
       end
 
+      # Profile names are h2'd and contain links. They're the only elements like that... for now...
       user_elem = all("h2").find { |h2| h2.all("a").length == 1}
       user_url = user_elem.find("a")["href"]
 
-      # fb_id_pattern = /facebook.com\/(.*?)\//
-      # user_id = fb_id_pattern.match(user_url).captures.first
-
-      text = "asa's post. back off"
+      text = "asa's post. back off"  # still need to find a way to extract post text.
 
 
-      # date_pattern = /.*?, #{Regexp.quote(month)} [0-9]{1,2},/
-
-      # match 3h, 3d, 3w, October 3
-      # match date regex intsead of aria label
+      # This is horrible and I'll re-write it, but it basically checks spans to see whether one of their attributes matches a date string or contains a month+day reference
+      # Depending on how old the post is, that string might look like "3h...", "3d...", "...October 3, 2021..."
+      # obviously it deserves its own method. Soon to come
       date_elem = all("a").find { |a| (/[0-9]{1,2}(h|w|d)/.match(a["aria-label"])) || (/[0-9]{1,2}/.match(a["aria-label"]) and Date::MONTHNAMES[1..].any? { | month| a["aria-label"].include? month } ) }
-      date_elem.hover
-      sleep 5  # wait for hover tooltip
+      date_elem.hover  # hovering over the date element found above surfaces a tooltip with the full date string
+      sleep 5  # wait for the tooltip to appear after we hover
 
-      # matches "..., October 14, "
+      # We want to match a datestring in the tooltip that looks like "...Thursday, October 31, ..."
       date_span = all("span").filter { |span| Date::MONTHNAMES[1..].any? { |month|  /.*?, #{Regexp.quote(month)} [0-9]{1,2},/.match(span.text) } }.first
       date = DateTime.strptime(date_span.text, "%A, %B %d, %Y at %l:%M %p")
 
+      # This user object is bare right now. Different types of profiles have different information
+      # And I think people get to choose which attributes appear on their profiles.
+      # On certain profiles, an attribute will appear in one place, and onother profiles, another
+      # But that's a problem for next week
       user = User.lookup(user_url)
       {
         image_file_name: image_file_name,

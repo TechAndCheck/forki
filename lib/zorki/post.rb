@@ -31,7 +31,8 @@ module Zorki
   private
 
     def initialize(hash = {})
-      # @id = hash[:id]ss
+      # I need to figure out what's up with Facebook ids. Media have unique IDs, but their position in the URL is variable
+      # @id = hash[:id]
       @image_file_name = hash[:image_file_name]
       @image_url = hash[:image_url]
       @has_video = hash[:has_video]
