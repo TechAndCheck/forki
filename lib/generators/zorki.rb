@@ -1,3 +1,3 @@
-Zorki.configuration do |config|
-  config.temp_storage_location = "tmp/zorki"
+forki.configuration do |config|
+  config.temp_storage_location = "tmp/forki"
 end

@@ -12,7 +12,7 @@ Capybara.default_driver = :selenium_chrome
 Capybara.app_host = "https://facebook.com"
 Capybara.default_max_wait_time = 15
 
-module Zorki
+module Forki
   class Scraper
     include Capybara::DSL
 
@@ -88,6 +88,7 @@ module Zorki
         reactions[reaction_type.to_sym] = num_reactions
       end
       refresh
+      sleep 2
       # all("div").find { | div | div["aria-label"] == "Close" }.click  # close reactions modal
       reactions
     end
@@ -131,12 +132,12 @@ module Zorki
       # Go to the home page
       visit("/")
 
+      return unless all("input", id: "email").length > 0
 
       fill_in("email", with: ENV["FB_EMAIL"])
       fill_in("Password", with: ENV["FB_PW"])
       click_button("Log In")
       sleep 10
-
     end
 
     def fetch_image(url)
@@ -145,9 +146,9 @@ module Zorki
         if request.success?
           return request.body
         elsif request.timed_out?
-          raise Zorki::Error("Fetching image at #{url} timed out")
+          raise forki::Error("Fetching image at #{url} timed out")
         else
-          raise Zorki::Error("Fetching image at #{url} returned non-successful HTTP server response #{request.code}")
+          raise forki::Error("Fetching image at #{url} returned non-successful HTTP server response #{request.code}")
         end
       end
     end

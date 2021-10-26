@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Zorki
+module Forki
   class Post
     def self.lookup(urls = [])
       # If a single id is passed in we make it the appropriate array
@@ -44,7 +44,7 @@ module Zorki
       @text = hash[:text]
       @date = hash[:date]
       @user = hash[:user]
-      @video_file_name = hash[:video]
+      @video_file_name = hash[:video_file_name]
       @video_preview_image = hash[:video_preview_image]
       @video_preview_image_url = hash[:video_preview_image_url]
     end
@@ -54,7 +54,7 @@ module Zorki
 
       def scrape(urls)
         urls.map do |url|
-          post_hash = Zorki::PostScraper.new.parse(url)
+          post_hash = Forki::PostScraper.new.parse(url)
             Post.new(post_hash)
           end
         end

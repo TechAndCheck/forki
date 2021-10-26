@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "byebug"
-module Zorki
+module Forki
   class Poster
     def self.lookup(ids = [])
       # If a single id is passed in we make it the appropriate array
@@ -44,7 +44,7 @@ module Zorki
 
       def scrape(ids)
         ids.map do |id|
-          poster_hash = Zorki::UserScraper.new.parse(id)
+          poster_hash = forki::UserScraper.new.parse(id)
           Poster.new(poster_hash)
         end
       end

@@ -6,7 +6,7 @@ class UserTest < Minitest::Test
   # Note: if this fails, check the account, the number may just have changed
   # We're using Pete Souza because Obama's former photographer isn't likely to be taken down
   def test_a_username_returns_properly_when_scraped
-    user = Zorki::User.lookup(["petesouza"]).first
+    user = Forki::User.lookup(["petesouza"]).first
     assert_equal user.name, "Pete Souza"
     assert_equal user.username, "petesouza"
     assert user.number_of_posts > 1000

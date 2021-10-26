@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
-require_relative "zorki/version"
+require_relative "forki/version"
 
 # Representative objects we create
-require_relative "zorki/user"
-require_relative "zorki/post"
-require_relative "zorki/poster"
+require_relative "forki/user"
+require_relative "forki/post"
+require_relative "forki/poster"
 
 require "helpers/configuration"
-require_relative "zorki/scrapers/scraper"
+require_relative "forki/scrapers/scraper"
 
-module Zorki
+module Forki
   extend Configuration
 
   class Error < StandardError
-    def initialize(msg = "Zorki encountered an error scraping Instagram")
+    def initialize(msg = "forki encountered an error scraping Instagram")
       super
     end
   end
 
-  define_setting :temp_storage_location, "tmp/zorki"
+  define_setting :temp_storage_location, "tmp/forki"
 
   # Get an image from a URL and save to a temp folder set in the configuration under
   # temp_storage_location
@@ -36,7 +36,7 @@ module Zorki
       extension = ".#{extension}" unless extension.nil?
     end
 
-    temp_file_name = "#{Zorki.temp_storage_location}/#{SecureRandom.uuid}#{extension}"
+    temp_file_name = "#{Forki.temp_storage_location}/#{SecureRandom.uuid}#{extension}"
 
     # We do this in case the folder isn't created yet, since it's a temp folder we'll just do so
     self.create_temp_storage_location
@@ -47,8 +47,8 @@ module Zorki
 private
 
   def self.create_temp_storage_location
-    return if File.exist?(Zorki.temp_storage_location) && File.directory?(Zorki.temp_storage_location)
-    FileUtils.mkdir_p Zorki.temp_storage_location
+    return if File.exist?(Forki.temp_storage_location) && File.directory?(Forki.temp_storage_location)
+    FileUtils.mkdir_p Forki.temp_storage_location
   end
 
 end

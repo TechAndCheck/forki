@@ -8,3 +8,5 @@
 /tmp/
 .env
 .byebug_history
+.idea/
+.DS_STORE

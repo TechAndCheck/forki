@@ -2,7 +2,7 @@
 
 require "typhoeus"
 
-module Zorki
+module Forki
   class UserScraper < Scraper
     def parse(url)
       # Stuff we need to get from the DOM (implemented is starred):
@@ -16,6 +16,9 @@ module Zorki
       #   - *description
       #   - *links
       # - *Profile image
+      if url.include? "m.facebook.com"
+        url = url.sub!("m.facebook.com", "www.facebook.com")
+      end
       visit url
       # graphql_script = find_graphql_script
 
@@ -24,7 +27,7 @@ module Zorki
       profile_name = first("h2").text
 
       # scraped_username = graphql_script["entry_data"]["ProfilePage"].first["graphql"]["user"]["username"]
-      # raise Zorki::Error unless username == scraped_username
+      # raise forki::Error unless username == scraped_username
 
       # profile_image_url = graphql_script["entry_data"]["ProfilePage"].first["graphql"]["user"]["profile_pic_url_hd"]
       to_return = {
@@ -36,7 +39,7 @@ module Zorki
         # verified: graphql_script["entry_data"]["ProfilePage"].first["graphql"]["user"]["is_verified"],
         # profile: graphql_script["entry_data"]["ProfilePage"].first["graphql"]["user"]["biography"],
         profile_link: url
-        # profile_image: Zorki.retrieve_media(profile_image_url),
+        # profile_image: forki.retrieve_media(profile_image_url),
         # profile_image_url: profile_image_url
       }
 

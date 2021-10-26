@@ -1,6 +1,6 @@
-class ZorkiGenerator < Rails::Generators::Base
+class forkiGenerator < Rails::Generators::Base
   source_root(File.expand_path(File.dirname(__FILE__)))
   def copy_initializer
-    copy_file 'zorki.rb', 'config/initializers/zorki.rb'
+    copy_file 'forki.rb', 'config/initializers/forki.rb'
   end
 end

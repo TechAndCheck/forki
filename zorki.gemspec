@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/zorki/version"
+require_relative "lib/forki/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "zorki"
-  spec.version       = Zorki::VERSION
+  spec.name          = "forki"
+  spec.version       = Forki::VERSION
   spec.authors       = ["Christopher Guess"]
   spec.email         = ["cguess@gmail.com"]
 
