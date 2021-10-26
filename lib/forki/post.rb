@@ -6,9 +6,6 @@ module Forki
       # If a single id is passed in we make it the appropriate array
       urls = [urls] unless urls.kind_of?(Array)
 
-      # Check that the urls are at least real urls
-      # urls.each { |id| raise Birdsong::Error if !/\A\d+\z/.match(id) }
-
       self.scrape(urls)
     end
 

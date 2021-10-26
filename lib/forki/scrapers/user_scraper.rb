@@ -16,14 +16,8 @@ module Forki
       #   - *description
       #   - *links
       # - *Profile image
-      if url.include? "m.facebook.com"
-        url = url.sub!("m.facebook.com", "www.facebook.com")
-      end
-      validate_url(url)
-      visit url
-      # graphql_script = find_graphql_script
-
-      # Get the username (to verify we're on the right page here)
+      url.sub!("m.facebook.com", "www.facebook.com")
+      validate_and_load_page(url)
 
       profile_name = first("h2").text
 

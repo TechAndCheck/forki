@@ -9,4 +9,5 @@
 .env
 .byebug_history
 .idea/
+.idea/*
 .DS_STORE

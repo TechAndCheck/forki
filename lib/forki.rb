@@ -5,7 +5,6 @@ require_relative "forki/version"
 # Representative objects we create
 require_relative "forki/user"
 require_relative "forki/post"
-require_relative "forki/poster"
 
 require "helpers/configuration"
 require_relative "forki/scrapers/scraper"
