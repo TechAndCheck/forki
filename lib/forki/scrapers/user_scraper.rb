@@ -19,6 +19,7 @@ module Forki
       if url.include? "m.facebook.com"
         url = url.sub!("m.facebook.com", "www.facebook.com")
       end
+      validate_url(url)
       visit url
       # graphql_script = find_graphql_script
 

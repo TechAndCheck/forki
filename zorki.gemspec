@@ -5,10 +5,10 @@ require_relative "lib/forki/version"
 Gem::Specification.new do |spec|
   spec.name          = "forki"
   spec.version       = Forki::VERSION
-  spec.authors       = ["Christopher Guess"]
-  spec.email         = ["cguess@gmail.com"]
+  spec.authors       = [""]
+  spec.email         = [""]
 
-  spec.summary       = "A gem to scrape Instagram pages for archive purposes."
+  spec.summary       = "A gem to scrape Facebook pages for archive purposes."
   # spec.description   = "TODO: Write a longer description or delete this line."
   # spec.homepage      = "TODO: Put your gem's website or public repo URL here."
   spec.license       = "MIT"

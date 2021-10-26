@@ -15,12 +15,7 @@ module Forki
       # - Hashtags
 
       login
-
-      # visit "https://www.facebook.com/humansofnewyork/photos/a.102107073196735/6698806303526746/"  # page photo
-      # visit "https://www.facebook.com/watch/?v=258470355199081"  # watch video
-      # media_url = "https://www.facebook.com/photo.php?fbid=1313009878767692&set=a.130724406996251&type=3&theater" # personal photo
-      # media_url = "https://www.facebook.com/ILMFOrg/photos/a.207535503185392/905395720066030"
-      # visit "https://www.facebook.com/ILMFOrg/photos/a.207535503185392/905395720066030"
+      raise "invalid url" unless validate_url(url)
       visit url
 
       # escape fact check filter

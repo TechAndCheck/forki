@@ -14,7 +14,7 @@ module Forki
   extend Configuration
 
   class Error < StandardError
-    def initialize(msg = "forki encountered an error scraping Instagram")
+    def initialize(msg = "forki encountered an error scraping Facebook")
       super
     end
   end

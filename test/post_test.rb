@@ -85,4 +85,10 @@ class PostTest < Minitest::Test
 
     assert_not_nil post.user.first
   end
+
+  def test_scraping_a_bad_url_raises_invalid_url_exception
+    assert_raises "invalid url" do
+      post = Forki::Post.lookup(["https://www.instagram.com/3141592653589"])
+    end
+  end
 end

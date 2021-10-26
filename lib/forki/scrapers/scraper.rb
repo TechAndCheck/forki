@@ -140,6 +140,11 @@ module Forki
       sleep 10
     end
 
+    def validate_url(url)
+      facebook_url_pattern = /https:\/\/www.facebook.com\//
+      facebook_url_pattern.match?(url)
+    end
+
     def fetch_image(url)
       request = Typhoeus::Request.new(url, followlocation: true)
       request.on_complete do |response|
