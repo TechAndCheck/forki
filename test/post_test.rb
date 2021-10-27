@@ -36,6 +36,7 @@ class PostTest < Minitest::Test
     assert_not_nil post.image_file_name
 
     assert_not_nil post.user.first
+    assert_not_nil post.creation_date
   end
 
   def test_a_video_post_by_a_user_returns_properly_when_scraped
@@ -52,6 +53,7 @@ class PostTest < Minitest::Test
     assert_not_nil post.video_preview_image
 
     assert_not_nil post.user.first
+    assert_not_nil post.creation_date
   end
 
   def test_a_video_post_by_a_page_retuns_properly_when_scraped
@@ -68,6 +70,7 @@ class PostTest < Minitest::Test
     assert_not_nil post.video_preview_image
 
     assert_not_nil post.user.first
+    assert_not_nil post.creation_date
   end
 
   def test_a_video_by_a_page_in_the_watch_tab_returns_properly_when_scraped
@@ -84,11 +87,12 @@ class PostTest < Minitest::Test
     assert_not_nil post.video_preview_image
 
     assert_not_nil post.user.first
+    assert_not_nil post.creation_date
   end
 
   def test_scraping_a_bad_url_raises_invalid_url_exception
     assert_raises "invalid url" do
-      post = Forki::Post.lookup(["https://www.instagram.com/3141592653589"])
+      Forki::Post.lookup(["https://www.instagram.com/3141592653589"])
     end
   end
 end

@@ -19,7 +19,7 @@ module Forki
                 :num_views,
                 :reactions,
                 :text,
-                :date,
+                :creation_date,
                 :user,
                 :video_file_name,
                 :video_preview_image,
@@ -39,7 +39,7 @@ module Forki
       @num_views = hash[:num_views]
       @reactions = hash[:reactions]
       @text = hash[:text]
-      @date = hash[:date]
+      @creation_date = hash[:creation_date]
       @user = hash[:user]
       @video_file_name = hash[:video_file_name]
       @video_preview_image = hash[:video_preview_image]
