@@ -10,7 +10,7 @@ module Forki
     def find_num_comments
       comment_pattern = /[0-9KM,\. ]+Comments/
       comments_span = all("span").find { |s| s.text(:all) =~ comment_pattern}
-      extract_num_interactions(comments_span)
+      extract_int_from_num_element(comments_span)
     end
 
     # Finds the number of times a post has been shared
@@ -18,7 +18,7 @@ module Forki
       shares_pattern = /[0-9KM\., ]+Shares/
       spans = all("span")
       shares_span = spans.find { |s| s.text(:all) =~ shares_pattern}
-      extract_num_interactions(shares_span)
+      extract_int_from_num_element(shares_span)
     end
 
     # Finds the number of times a (video) post has been viewed.
@@ -26,27 +26,9 @@ module Forki
       views_pattern = /[0-9MK, ]+Views/
       spans = all("span")
       views_span = spans.find { | s| s.text(:all) =~ views_pattern}
-      extract_num_interactions(views_span)
+      extract_int_from_num_element(views_span)
     end
 
-    # Extracts an integer out of a string that describes the number of interactions on a post
-    # e.g. "4K Comments" returns 4000
-    # e.g. "131 Shares" returns 131
-    def extract_num_interactions(element)
-      return unless element
-      num_pattern = /[0-9KM\.]+/
-      interaction_num_text = num_pattern.match(element.text(:all))[0]
-
-      if interaction_num_text.include?(".")  # e.g. "2.2K"
-        interaction_num_text.to_i + interaction_num_text[-2].to_i * 100
-      elsif interaction_num_text.include?("K") # e.g. "13K"
-        interaction_num_text.to_i * 1000
-      elsif interaction_num_text.include?("M") # e.g. "13M"
-        interaction_num_text.to_i * 1_000_000
-      else  # e.g. "15"
-        interaction_num_text.to_i
-      end
-    end
 
     # Finds the types/counts of reactions to a post
     def find_reactions
@@ -57,7 +39,7 @@ module Forki
         next unless div.all("img", visible: :all).length > 0
         reaction_img = div.find("img", visible: :all)
         reaction_type = determine_reaction_type(reaction_img)
-        num_reactions = extract_num_interactions(div)
+        num_reactions = extract_int_from_num_element(div)
         reactions[reaction_type.to_sym] = num_reactions
       end
       reactions

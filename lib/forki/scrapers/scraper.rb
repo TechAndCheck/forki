@@ -25,6 +25,7 @@ module Forki
 
   private
 
+
     def login
       # Go to the home page
       visit("/")
@@ -54,6 +55,26 @@ module Forki
         else
           raise forki::Error("Fetching image at #{url} returned non-successful HTTP server response #{request.code}")
         end
+      end
+    end
+
+
+    # Extracts an integer out of a string describing a number
+    # e.g. "4K Comments" returns 4000
+    # e.g. "131 Shares" returns 131
+    def extract_int_from_num_element(element)
+      return unless element
+      num_pattern = /[0-9KM ,.]+/
+      interaction_num_text = num_pattern.match(element.text(:all))[0]
+
+      if interaction_num_text.include?(".")  # e.g. "2.2K"
+        interaction_num_text.to_i + interaction_num_text[-2].to_i * 100
+      elsif interaction_num_text.include?("K") # e.g. "13K"
+        interaction_num_text.to_i * 1000
+      elsif interaction_num_text.include?("M") # e.g. "13M"
+        interaction_num_text.to_i * 1_000_000
+      else  # e.g. "15,443"
+        interaction_num_text.gsub(",", "").to_i
       end
     end
 

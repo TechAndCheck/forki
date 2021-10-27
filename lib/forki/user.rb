@@ -14,30 +14,26 @@ module Forki
     end
 
     attr_reader :name,
-                :username,
-                :number_of_posts,
                 :number_of_followers,
-                :number_of_following,
                 :verified,
-                :profile,
+                # :profile,
                 :profile_link,
-                :profile_image,
-                :profile_image_url
+                :profile_image_file,
+                :profile_image_url,
+                :number_of_likes
 
     private
 
     # More next week
     def initialize(hash = {})
       @name = hash[:name]
-      # @username = hash[:username]
-      # @number_of_posts = hash[:number_of_posts]
-      # @number_of_followers = hash[:number_of_followers]
-      # @number_of_following = hash[:number_of_following]
-      # @verified = hash[:verified]
+      @number_of_followers = hash[:number_of_followers]
+      @verified = hash[:verified]
       # @profile = hash[:profile]
       @profile_link = hash[:profile_link]
-      # @profile_image = hash[:profile_image]
-      # @profile_image_url = hash[:profile_image_url]
+      @profile_image_file = hash[:profile_image_file]
+      @profile_image_url = hash[:profile_image_url]
+      @number_of_likes = hash[:number_of_likes]
     end
 
     class << self
