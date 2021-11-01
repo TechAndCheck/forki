@@ -5,7 +5,7 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in birdsong.gemspec
 gemspec
 
-gem "dhash-vips"
+gem "dhash-vips", "0.1.1.0"
 
 gem "rake", "~> 13.0"
 
