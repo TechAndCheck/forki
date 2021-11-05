@@ -69,7 +69,7 @@ module Forki
       return unless all("input", id: "email").length > 0
 
       fill_in("email", with: ENV["FB_EMAIL"])
-      fill_in("Password", with: ENV["FB_PW"])
+      fill_in("pass", with: ENV["FB_PW"])
       click_button("Log In")
       sleep 4
     end
