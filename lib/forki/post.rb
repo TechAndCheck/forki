@@ -2,11 +2,8 @@
 
 module Forki
   class Post
-    def self.lookup(urls = [])
-      # If a single id is passed in we make it the appropriate array
-      urls = [urls] unless urls.kind_of?(Array)
-
-      self.scrape(urls)
+    def self.lookup(url)
+      self.scrape(url)
     end
 
     attr_reader :image_file_name,
@@ -19,10 +16,10 @@ module Forki
                 :num_views,
                 :reactions,
                 :text,
-                :creation_date,
+                :created_at,
                 :user,
                 :video_file_name,
-                :video_preview_image,
+                :video_preview_image_file_name,
                 :video_preview_image_url
 
   private
@@ -39,21 +36,19 @@ module Forki
       @num_views = hash[:num_views]
       @reactions = hash[:reactions]
       @text = hash[:text]
-      @creation_date = hash[:creation_date]
+      @created_at = hash[:created_at]
       @user = hash[:user]
       @video_file_name = hash[:video_file_name]
-      @video_preview_image = hash[:video_preview_image]
+      @video_preview_image_file_name = hash[:video_preview_image_file_name]
       @video_preview_image_url = hash[:video_preview_image_url]
     end
 
     class << self
       private
 
-      def scrape(urls)
-        urls.map do |url|
-          post_hash = Forki::PostScraper.new.parse(url)
-            Post.new(post_hash)
-          end
+      def scrape(url)
+        post_hash = Forki::PostScraper.new.parse(url)
+          Post.new(post_hash)
         end
     end
   end
