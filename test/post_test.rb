@@ -7,13 +7,10 @@ class PostTest < Minitest::Test
     cleanup_temp_folder
   end
 
-  # Note: if this fails, check the account, the number may just have changed
-  # We're using Pete Souza because Obama's former photographer isn't likely to be taken down
   def test_an_image_post_by_a_page_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/381726605193429/photos/a.764764956889590/3625268454172545/
               https://www.facebook.com/police.thinblueline/photos/a.10151517985262372/10158540959247372/
               https://www.facebook.com/PresidentDonaldTrumpFanPage/photos/a.711866182180811/3317607074940029/]
-    # post = Forki::Post.lookup(["https://www.facebook.com/humansofnewyork/photos/a.102107073196735/6698806303526746/"]).first
     urls.each do |url|
       post = Forki::Post.lookup(url)
 
@@ -139,7 +136,8 @@ class PostTest < Minitest::Test
   end
 
   def test_scraping_an_inaccessible_post_raises_a_content_not_available_exception
-    assert_nil Forki::Post.lookup("https://www.facebook.com/redwhitebluenews/videos/258470355199081/")
+    assert_raises "content unavailable" do
+      Forki::Post.lookup("https://www.facebook.com/redwhitebluenews/videos/258470355199081/")
+    end
   end
-
 end

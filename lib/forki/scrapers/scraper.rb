@@ -24,7 +24,7 @@ module Forki
 
     # Returns all GraphQL data objects embedded within a string
     # Finds substrings that look like '"data": {...}' and converts them to hashes
-    def find_graphql_data_objects(objs = [], html_str)
+    def find_graphql_data_strings(objs = [], html_str)
       data_marker = '"data":{'
       data_start_index = html_str.index(data_marker)
       return objs if data_start_index.nil? # No more data blocks in the page source
@@ -33,7 +33,7 @@ module Forki
       return objs if data_closure_index.nil?
 
       graphql_data_str = html_str[data_start_index...data_closure_index].delete_prefix('"data":')
-      objs + [graphql_data_str] + find_graphql_data_objects(html_str[data_closure_index..])
+      objs + [graphql_data_str] + find_graphql_data_strings(html_str[data_closure_index..])
     end
 
     def find_graphql_data_closure_index(html_str, start_index)
@@ -78,8 +78,8 @@ module Forki
       login
       facebook_url_pattern = /https:\/\/www.facebook.com\//
       raise "invalid url" unless facebook_url_pattern.match?(url)
-      raise "content unavailable" if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
       visit url
+      raise "content unavailable" if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
     end
 
     def fetch_image(url)
