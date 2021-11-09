@@ -3,14 +3,8 @@
 require "byebug"
 module Forki
   class User
-    def self.lookup(ids = [])
-      # If a single id is passed in we make it the appropriate array
-      ids = [ids] unless ids.kind_of?(Array)
-
-      # Check that the usernames are at least real usernames
-      # usernames.each { |id| raise Birdsong::Error if !/\A\d+\z/.match(id) }
-
-      self.scrape(ids)
+    def self.lookup(url)
+      self.scrape(url)
     end
 
     attr_reader :name,
@@ -39,11 +33,9 @@ module Forki
     class << self
       private
 
-      def scrape(urls)
-        urls.map do |url|
-          user_hash = Forki::UserScraper.new.parse(url)
-          User.new(user_hash)
-        end
+      def scrape(url)
+        user_hash = Forki::UserScraper.new.parse(url)
+        User.new(user_hash)
       end
     end
   end
