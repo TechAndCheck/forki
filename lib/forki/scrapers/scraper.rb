@@ -6,7 +6,6 @@ require "dotenv/load"
 require "oj"
 require "selenium-webdriver"
 require "open-uri"
-require "dhash-vips"
 
 Capybara.default_driver = :selenium_chrome
 Capybara.app_host = "https://facebook.com"
