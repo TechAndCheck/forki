@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "typhoeus"
-require "Date"
 
 module Forki
   class PostScraper < Scraper
