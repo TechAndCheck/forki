@@ -12,6 +12,18 @@ require_relative "forki/scrapers/scraper"
 module Forki
   extend Configuration
 
+  class InvalidUrlError < StandardError
+    def initialize(msg = "Url must be a proper Facebook Url")
+      super
+    end
+  end
+
+  class ContentUnavailableError < StandardError
+    def initialize(msg = "Post no longer available")
+      super
+    end
+  end
+
   class Error < StandardError
     def initialize(msg = "forki encountered an error scraping Facebook")
       super
@@ -51,3 +63,4 @@ private
   end
 
 end
+

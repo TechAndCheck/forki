@@ -12,6 +12,7 @@ Capybara.app_host = "https://facebook.com"
 Capybara.default_max_wait_time = 15
 
 module Forki
+
   class Scraper
     include Capybara::DSL
 
@@ -76,9 +77,9 @@ module Forki
     def validate_and_load_page(url)
       login
       facebook_url_pattern = /https:\/\/www.facebook.com\//
-      raise "invalid url" unless facebook_url_pattern.match?(url)
+      raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
       visit url
-      raise "content unavailable" if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
+      raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
     end
 
     def fetch_image(url)
