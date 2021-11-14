@@ -28,6 +28,7 @@ module Forki
       profile_title_sections_str = gql_strs.find { |gql| gql.include? "show_prevet_blue_badge_modal_ig_verified" }
       # profile_title_sections_obj = JSON.parse(profile_title_sections_str)
       {
+        id: profile_header_obj["user"]["id"],
         number_of_followers: find_num_followers(profile_title_sections_str),
         name: profile_header_obj["user"]["name"],
         verified: profile_header_obj["user"]["is_verified"],
@@ -41,6 +42,7 @@ module Forki
       page_about_card = page_cards_list.find { |card| card["__typename"] == "CometPageAboutCardWithoutMapRenderer" }
       viewer_page_obj = JSON.parse(gql_strs.find { |gql| (gql.include? "profile_photo") && gql.include?("is_verified") })
       {
+        id: page_about_card["page"]["id"],
         number_of_followers: page_about_card["page"]["follower_count"],
         name: page_about_card["page"]["name"],
         verified: viewer_page_obj["page"]["is_verified"],

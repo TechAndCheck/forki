@@ -8,9 +8,9 @@ module Forki
     end
 
     attr_reader :name,
+                :id,
                 :number_of_followers,
                 :verified,
-                # :profile,
                 :profile_link,
                 :profile_image_file,
                 :profile_image_url,
@@ -20,6 +20,7 @@ module Forki
 
     def initialize(hash = {})
       @name = hash[:name]
+      @id = hash[:id]
       @number_of_followers = hash[:number_of_followers]
       @verified = hash[:verified]
       @profile_link = hash[:profile_link]

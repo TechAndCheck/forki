@@ -25,6 +25,7 @@ class PostTest < Minitest::Test
 
       assert_not_nil post.user
       assert_not_nil post.created_at
+      assert_not_nil post.id
     end
   end
 

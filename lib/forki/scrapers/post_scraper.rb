@@ -37,6 +37,7 @@ module Forki
       reaction_counts = extract_reaction_counts(feedback_obj["feedback"]["top_reactions"])
       share_count_obj = feedback_obj["feedback"].fetch("share_count", {})
       post_details = {
+        id: video_obj["id"],
         num_comments: feedback_obj["feedback"]["comment_count"]["total_count"],
         num_shares: share_count_obj.fetch("count", nil),
         num_views: feedback_obj["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
@@ -62,6 +63,7 @@ module Forki
       poster = creation_story_obj["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
       reaction_counts = extract_reaction_counts(viewer_actor_obj["comet_ufi_summary_and_actions_renderer"]["feedback"]["top_reactions"])
       post_details = {
+        id: cur_media_obj["currMedia"]["id"],
         num_comments: viewer_actor_obj["comment_count"]["total_count"],
         num_shares: viewer_actor_obj["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"],
         reshare_warning: viewer_actor_obj["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"],
@@ -85,6 +87,7 @@ module Forki
       video_url = creation_story_obj["creation_story"]["shareable"]["url"].gsub("\\", "")
       reaction_counts = extract_reaction_counts(creation_story_obj["feedback"]["top_reactions"])
       post_details = {
+        id: video_obj["id"],
         num_comments: creation_story_obj["feedback"]["comment_count"]["total_count"],
         num_shares: nil, # Not present for watch feed videos?
         num_views: creation_story_obj["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
@@ -110,6 +113,7 @@ module Forki
       video_url = creation_story_obj["shareable"]["url"].gsub("\\", "")
       reaction_counts = extract_reaction_counts(creation_story_obj["feedback_context"]["feedback_target_with_context"]["top_reactions"])
       post_details = {
+        id: creation_story_obj["shareable"]["id"],
         num_comments: creation_story_obj["feedback_context"]["feedback_target_with_context"]["comment_count"]["total_count"],
         num_shares: nil,
         num_views: find_num_views, # as far as I can tell, this is never present for live videos

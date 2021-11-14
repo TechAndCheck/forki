@@ -7,10 +7,10 @@ module Forki
     end
 
     attr_reader :image_file_name,
-                # :id,
                 :image_url,
                 :has_video,
                 :url,
+                :id,
                 :num_comments,
                 :num_shares,
                 :num_views,
@@ -31,6 +31,7 @@ module Forki
       @image_url = hash[:image_url]
       @has_video = hash[:has_video]
       @url = hash[:url]
+      @id = hash[:id]
       @num_comments = hash[:num_comments]
       @num_shares = hash[:num_shares]
       @num_views = hash[:num_views]

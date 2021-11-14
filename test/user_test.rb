@@ -19,6 +19,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file
       assert_not_nil user.profile_link
+      assert_not_nil user.id
     end
   end
   def test_a_page_returns_properly_when_scraped
@@ -34,6 +35,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file
       assert_not_nil user.profile_link
+      assert_not_nil user.id
     end
   end
 
@@ -51,6 +53,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file
       assert_not_nil user.profile_link
+      assert_not_nil user.id
     end
   end
 
