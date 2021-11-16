@@ -6,7 +6,7 @@ module Forki
       self.scrape(url)
     end
 
-    attr_reader :image_file_name,
+    attr_reader :image_file,
                 :image_url,
                 :has_video,
                 :url,
@@ -18,8 +18,8 @@ module Forki
                 :text,
                 :created_at,
                 :user,
-                :video_file_name,
-                :video_preview_image_file_name,
+                :video_file,
+                :video_preview_image_file,
                 :video_preview_image_url
 
   private
@@ -27,7 +27,7 @@ module Forki
     def initialize(hash = {})
       # I need to figure out what's up with Facebook ids. Media have unique IDs, but their position in the URL is variable
       # @id = hash[:id]
-      @image_file_name = hash[:image_file_name]
+      @image_file = hash[:image_file]
       @image_url = hash[:image_url]
       @has_video = hash[:has_video]
       @url = hash[:url]
@@ -39,8 +39,8 @@ module Forki
       @text = hash[:text]
       @created_at = hash[:created_at]
       @user = hash[:user]
-      @video_file_name = hash[:video_file_name]
-      @video_preview_image_file_name = hash[:video_preview_image_file_name]
+      @video_file = hash[:video_file]
+      @video_preview_image_file = hash[:video_preview_image_file]
       @video_preview_image_url = hash[:video_preview_image_url]
     end
 

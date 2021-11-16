@@ -21,7 +21,7 @@ class PostTest < Minitest::Test
       assert post.num_comments > 0
       assert post.reactions.length > 0
 
-      assert_not_nil post.image_file_name
+      assert_not_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -43,7 +43,7 @@ class PostTest < Minitest::Test
       assert post.num_comments > 0
       assert post.reactions.length > 0
 
-      assert_not_nil post.image_file_name
+      assert_not_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -59,9 +59,9 @@ class PostTest < Minitest::Test
     assert post.num_comments > 0
     assert post.reactions.length > 0
 
-    assert_not_nil post.video_file_name
-    assert_nil post.image_file_name
-    assert_not_nil post.video_preview_image_file_name
+    assert_not_nil post.video_file
+    assert_nil post.image_file
+    assert_not_nil post.video_preview_image_file
 
     assert_not_nil post.user
     assert_not_nil post.created_at
@@ -79,9 +79,9 @@ class PostTest < Minitest::Test
       assert post.num_comments > 0
       assert post.reactions.length > 0
 
-      assert_not_nil post.video_file_name
-      assert_nil post.image_file_name
-      assert_not_nil post.video_preview_image_file_name
+      assert_not_nil post.video_file
+      assert_nil post.image_file
+      assert_not_nil post.video_preview_image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -101,9 +101,9 @@ class PostTest < Minitest::Test
       assert post.num_comments > 0
       assert post.reactions.length > 0
 
-      assert_not_nil post.video_file_name
-      assert_nil post.image_file_name
-      assert_not_nil post.video_preview_image_file_name
+      assert_not_nil post.video_file
+      assert_nil post.image_file
+      assert_not_nil post.video_preview_image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -121,9 +121,9 @@ class PostTest < Minitest::Test
         assert post.num_comments > 0
         assert post.reactions.length > 0
 
-        assert_not_nil post.video_file_name
-        assert_nil post.image_file_name
-        assert_not_nil post.video_preview_image_file_name
+        assert_not_nil post.video_file
+        assert_nil post.image_file
+        assert_not_nil post.video_preview_image_file
 
         assert_not_nil post.user
         assert_not_nil post.created_at

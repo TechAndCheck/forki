@@ -49,8 +49,8 @@ module Forki
         profile_link: sidepane_obj["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true
       }
-      post_details[:video_preview_image_file_name] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file_name] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
+      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
       post_details
     end
@@ -73,7 +73,7 @@ module Forki
         created_at: cur_media_obj["currMedia"]["created_time"],
         has_video: false
       }
-      post_details[:image_file_name] = Forki.retrieve_media(post_details[:image_url])
+      post_details[:image_file] = Forki.retrieve_media(post_details[:image_url])
       post_details[:reactions] = reaction_counts
       post_details
     end
@@ -99,8 +99,8 @@ module Forki
         profile_link: video_url[..video_url.index("/videos")],
         has_video: true
       }
-      post_details[:video_preview_image_file_name] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file_name] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
+      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
       post_details
 
@@ -125,8 +125,8 @@ module Forki
         profile_link: video_url[..video_url.index("/videos")],
         has_video: true
       }
-      post_details[:video_preview_image_file_name] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file_name] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
+      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
       post_details
     end

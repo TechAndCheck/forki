@@ -47,12 +47,12 @@ module Forki
       extension = ".#{extension}" unless extension.nil?
     end
 
-    temp_file_name = "#{Forki.temp_storage_location}/#{SecureRandom.uuid}#{extension}"
+    temp_file = "#{Forki.temp_storage_location}/#{SecureRandom.uuid}#{extension}"
 
     # We do this in case the folder isn't created yet, since it's a temp folder we'll just do so
     self.create_temp_storage_location
-    File.binwrite(temp_file_name, response.body)
-    temp_file_name
+    File.binwrite(temp_file, response.body)
+    temp_file
   end
 
 private
