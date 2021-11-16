@@ -155,7 +155,7 @@ module Forki
 
       user_url = post_data[:profile_link]
       post_data[:url] = url
-      post_data[:user] = User.lookup(user_url)
+      post_data[:user] = User.lookup(user_url).first
       post_data
     end
   end
