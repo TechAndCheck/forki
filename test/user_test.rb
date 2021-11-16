@@ -9,8 +9,9 @@ class UserTest < Minitest::Test
   def test_a_public_profile_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/profile.php?id=100044487457347
               https://www.facebook.com/ezraklein]
-    urls.each do |url|
-      user = Forki::User.lookup(url)
+    # urls = ["https://www.facebook.com/ezraklein"]
+    users = Forki::User.lookup(urls)
+    users.each do |user|
       assert_not_nil user.name
       assert user.number_of_followers > 0
       assert user.number_of_likes.nil?
@@ -22,11 +23,12 @@ class UserTest < Minitest::Test
       assert_not_nil user.id
     end
   end
+
   def test_a_page_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/NPR
               https://www.facebook.com/nytimes]
-    urls.each do |url|
-      user = Forki::User.lookup(url)
+    users = Forki::User.lookup(urls)
+    users.each do |user|
       assert_not_nil user.name
       assert user.number_of_followers > 0
       assert user.number_of_likes > 0
@@ -42,8 +44,8 @@ class UserTest < Minitest::Test
   def test_a_normal_user_profile_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/bill.adair.716
               https://www.facebook.com/mark.stencel]
-    urls.each do |url|
-      user = Forki::User.lookup(url)
+    users = Forki::User.lookup(urls)
+    users.each do |user|
       assert_not_nil user.name
 
       assert_nil user.number_of_followers
@@ -56,5 +58,4 @@ class UserTest < Minitest::Test
       assert_not_nil user.id
     end
   end
-
 end

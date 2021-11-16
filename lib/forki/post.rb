@@ -2,8 +2,9 @@
 
 module Forki
   class Post
-    def self.lookup(url)
-      self.scrape(url)
+    def self.lookup(urls = [])
+      urls = [urls] unless urls.kind_of?(Array)
+      self.scrape(urls)
     end
 
     attr_reader :image_file,
@@ -47,10 +48,12 @@ module Forki
     class << self
       private
 
-      def scrape(url)
-        post_hash = Forki::PostScraper.new.parse(url)
+      def scrape(urls)
+        urls.map do |url|
+          post_hash = Forki::PostScraper.new.parse(url)
           Post.new(post_hash)
         end
+      end
     end
   end
 end

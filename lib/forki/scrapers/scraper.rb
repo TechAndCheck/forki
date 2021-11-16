@@ -71,7 +71,7 @@ module Forki
       fill_in("email", with: ENV["FB_EMAIL"])
       fill_in("pass", with: ENV["FB_PW"])
       click_button("Log In")
-      sleep 1
+      sleep 4
     end
 
     def validate_and_load_page(url)

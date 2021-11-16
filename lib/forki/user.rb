@@ -3,8 +3,9 @@
 require "byebug"
 module Forki
   class User
-    def self.lookup(url)
-      self.scrape(url)
+    def self.lookup(urls = [])
+      urls = [urls] unless urls.kind_of?(Array)
+      self.scrape(urls)
     end
 
     attr_reader :name,
@@ -32,9 +33,11 @@ module Forki
     class << self
       private
 
-      def scrape(url)
-        user_hash = Forki::UserScraper.new.parse(url)
-        User.new(user_hash)
+      def scrape(urls)
+        urls.map do |url|
+          user_hash = Forki::UserScraper.new.parse(url)
+          User.new(user_hash)
+        end
       end
     end
   end
