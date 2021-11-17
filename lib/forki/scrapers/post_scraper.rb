@@ -80,11 +80,12 @@ module Forki
 
     # Extract data from a non-live video post on the watch page
     def extract_vid_post_data_from_watch_page(gql_strs)
-      return extract_live_vid_post_data_from_watch_page(gql_strs) if current_url.include?("live")
+      return extract_live_video_post_data_from_watch_page(gql_strs) if current_url.include?("live")
       video_obj = gql_strs.map { |g| JSON.parse(g) }.find { |x| x.keys.include?("video") }
       creation_story_obj = JSON.parse(gql_strs.find { |gql| (gql.include?("creation_story")) && \
                                                             (gql.include?("live_status")) } )
-      video_url = creation_story_obj["creation_story"]["shareable"]["url"].gsub("\\", "")
+      video_permalink = creation_story_obj["creation_story"]["shareable"]["url"].gsub("\\", "")
+      media_object = video_obj["video"]["story"]["attachments"][0]["media"]
       reaction_counts = extract_reaction_counts(creation_story_obj["feedback"]["top_reactions"])
       post_details = {
         id: video_obj["id"],
@@ -93,10 +94,10 @@ module Forki
         num_views: creation_story_obj["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
         reshare_warning: creation_story_obj["feedback"]["should_show_reshare_warning"],
         video_preview_image_url: video_obj["video"]["story"]["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_url,
+        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).gsub("\\", ""),
         text: (creation_story_obj["creation_story"]["message"] || {})["text"],
         created_at: video_obj["video"]["story"]["attachments"][0]["media"]["publish_time"],
-        profile_link: video_url[..video_url.index("/videos")],
+        profile_link: video_permalink[..video_permalink.index("/videos")],
         has_video: true
       }
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
@@ -107,10 +108,11 @@ module Forki
     end
 
     # Extract data from live video post on the watch page
-    def extract_live_vid_post_data_from_watch_page(gql_strs)
+    def extract_live_video_post_data_from_watch_page(gql_strs)
       creation_story_obj = JSON.parse(gql_strs.find { |gql| (gql.include? "comment_count") && \
                                                        (gql.include? "creation_story") })["video"]["creation_story"]
-      video_url = creation_story_obj["shareable"]["url"].gsub("\\", "")
+      media_object = JSON.parse(gql_strs.find { |gql| gql.include? "playable_url" } )["video"]["creation_story"]["attachments"][0]["media"]
+      video_permalink = creation_story_obj["shareable"]["url"].gsub("\\", "")
       reaction_counts = extract_reaction_counts(creation_story_obj["feedback_context"]["feedback_target_with_context"]["top_reactions"])
       post_details = {
         id: creation_story_obj["shareable"]["id"],
@@ -119,10 +121,10 @@ module Forki
         num_views: find_num_views, # as far as I can tell, this is never present for live videos
         reshare_warning: creation_story_obj["feedback_context"]["feedback_target_with_context"]["should_show_reshare_warning"],
         video_preview_image_url: creation_story_obj["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_url,
+        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).gsub("\\", ""),
         text: creation_story_obj["attachments"][0]["media"]["savable_description"]["text"],
         created_at: creation_story_obj["attachments"][0]["media"]["publish_time"],
-        profile_link: video_url[..video_url.index("/videos")],
+        profile_link: video_permalink[..video_permalink.index("/videos")],
         has_video: true
       }
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])

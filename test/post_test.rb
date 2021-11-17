@@ -31,79 +31,27 @@ class PostTest < Minitest::Test
     urls = %w[https://www.facebook.com/photo.php?fbid=10213343702266063
               https://www.facebook.com/photo.php?fbid=3038249389564729
               https://www.facebook.com/photo.php?fbid=10217495563806354]
-    post = Forki::Post.lookup(urls)
-    refute post.has_video
-    assert_nil post.num_views
+    posts = Forki::Post.lookup(urls)
+    posts.each do |post|
+      refute post.has_video
+      assert_nil post.num_views
 
-    assert post.num_shares > 0
-    assert post.num_comments > 0
-    assert post.reactions.length > 0
+      assert post.num_shares > 0
+      assert post.num_comments > 0
+      assert post.reactions.length > 0
 
-    assert_not_nil post.image_file
+      assert_not_nil post.image_file
 
-    assert_not_nil post.user
-    assert_not_nil post.created_at
+      assert_not_nil post.user
+      assert_not_nil post.created_at
+    end
   end
 
   def test_a_video_post_by_a_user_returns_properly_when_scraped
-    post = Forki::Post.lookup("https://www.facebook.com/cory.hurlburt/videos/10163562367665117/")
-    assert post.has_video
-    assert post.num_views > 0
-
-    # assert post.num_shares > 0
-    assert post.num_comments > 0
-    assert post.reactions.length > 0
-
-    assert_not_nil post.video_file
-    assert_nil post.image_file
-    assert_not_nil post.video_preview_image_file
-
-    assert_not_nil post.user
-    assert_not_nil post.created_at
-  end
-
-  def test_a_video_post_by_a_page_retuns_properly_when_scraped
-    urls = %w[https://www.facebook.com/camille.mateo.90/videos/3046448408747570/
-              https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
-              https://www.facebook.com/161453087348302/videos/684374025476745/]
-    post = Forki::Post.lookup(urls)
-    assert post.has_video
-    assert post.num_views > 0
-
-    assert post.num_comments > 0
-    assert post.reactions.length > 0
-
-    assert_not_nil post.video_file
-    assert_nil post.image_file
-    assert_not_nil post.video_preview_image_file
-
-    assert_not_nil post.user
-    assert_not_nil post.created_at
-  end
-
-  def test_a_video_in_the_watch_tab_returns_properly_when_scraped
-    urls = %w[https://www.facebook.com/watch/?v=2707731869527520
-              https://www.facebook.com/watch/?v=3743756062349219]
-    post = Forki::Post.lookup(urls)
-    assert post.has_video
-    assert post.num_views > 0
-
-    assert post.num_comments > 0
-    assert post.reactions.length > 0
-
-    assert_not_nil post.video_file
-    assert_nil post.image_file
-    assert_not_nil post.video_preview_image_file
-
-    assert_not_nil post.user
-    assert_not_nil post.created_at
-  end
-
-    def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
-      urls = %w[https://www.facebook.com/watch/live/?v=960083361438600]
-      post = Forki::Post.lookup(urls)
+    posts = Forki::Post.lookup("https://www.facebook.com/cory.hurlburt/videos/10163562367665117/")
+    posts.each do |post|
       assert post.has_video
-      # assert post.num_views > 0  # live videos may not have views listed
+      assert post.num_views > 0
 
       assert post.num_comments > 0
       assert post.reactions.length > 0
@@ -114,6 +62,67 @@ class PostTest < Minitest::Test
 
       assert_not_nil post.user
       assert_not_nil post.created_at
+    end
+  end
+
+  def test_a_video_post_by_a_page_retuns_properly_when_scraped
+    urls = %w[https://www.facebook.com/camille.mateo.90/videos/3046448408747570/
+              https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
+              https://www.facebook.com/161453087348302/videos/684374025476745/]
+    posts = Forki::Post.lookup(urls)
+    posts.each do |post|
+      assert post.has_video
+      assert post.num_views > 0
+
+      assert post.num_comments > 0
+      assert post.reactions.length > 0
+
+      assert_not_nil post.video_file
+      assert_nil post.image_file
+      assert_not_nil post.video_preview_image_file
+
+      assert_not_nil post.user
+      assert_not_nil post.created_at
+    end
+  end
+
+  def test_a_video_in_the_watch_tab_returns_properly_when_scraped
+    urls = %w[https://www.facebook.com/watch/?v=2707731869527520
+              https://www.facebook.com/watch/?v=3743756062349219]
+    posts = Forki::Post.lookup(urls)
+    posts.each do |post|
+      assert post.has_video
+      assert post.num_views > 0
+
+      assert post.num_comments > 0
+      assert post.reactions.length > 0
+
+      assert_not_nil post.video_file
+      assert_nil post.image_file
+      assert_not_nil post.video_preview_image_file
+
+      assert_not_nil post.user
+      assert_not_nil post.created_at
+    end
+  end
+
+    def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
+      urls = %w[https://www.facebook.com/watch/live/?v=960083361438600]
+      posts = Forki::Post.lookup(urls)
+      posts.each do |post|
+        assert post.has_video
+        # assert post.num_views > 0  # live videos may not have views listed
+
+        assert post.num_comments > 0
+        assert post.reactions.length > 0
+
+        assert_not_nil post.video_file
+        assert_nil post.image_file
+        assert_not_nil post.video_preview_image_file
+
+        assert_not_nil post.user
+        assert_not_nil post.created_at
+      end
     end
 
   def test_scraping_a_bad_url_raises_invalid_url_exception
