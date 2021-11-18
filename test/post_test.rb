@@ -11,20 +11,21 @@ class PostTest < Minitest::Test
     urls = %w[https://www.facebook.com/381726605193429/photos/a.764764956889590/3625268454172545/
               https://www.facebook.com/police.thinblueline/photos/a.10151517985262372/10158540959247372/
               https://www.facebook.com/PresidentDonaldTrumpFanPage/photos/a.711866182180811/3317607074940029/]
-    post = Forki::Post.lookup(urls)
+    posts = Forki::Post.lookup(urls)
+    posts.each do |post|
+      refute post.has_video
+      assert_nil post.num_views # images do not have views
 
-    refute post.has_video
-    assert_nil post.num_views # images do not have views
+      assert post.num_shares > 0
+      assert post.num_comments > 0
+      assert post.reactions.length > 0
 
-    assert post.num_shares > 0
-    assert post.num_comments > 0
-    assert post.reactions.length > 0
+      assert_not_nil post.image_file
 
-    assert_not_nil post.image_file
-
-    assert_not_nil post.user
-    assert_not_nil post.created_at
-    assert_not_nil post.id
+      assert_not_nil post.user
+      assert_not_nil post.created_at
+      assert_not_nil post.id
+    end
   end
 
   def test_an_image_post_by_a_user_returns_properly_when_scraped
