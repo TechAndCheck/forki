@@ -62,18 +62,19 @@ module Forki
     private
 
 
+    # Logs in to Facebook (only on browser startup)
     def login
-      # Go to the home page
-      visit("/")
+      return if current_url.include? "facebook"
 
-      return unless all("input", id: "email").length > 0
-
+      visit("/")  # Visit the Facebook home page
       fill_in("email", with: ENV["FB_EMAIL"])
       fill_in("pass", with: ENV["FB_PW"])
       click_button("Log In")
-      sleep 4
+      sleep 3
     end
 
+    # Ensures that a valid Facebook url has bene provided, and that it points to an available post
+    # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
       login
       facebook_url_pattern = /https:\/\/www.facebook.com\//
@@ -82,26 +83,12 @@ module Forki
       raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
     end
 
-    def fetch_image(url)
-      request = Typhoeus::Request.new(url, followlocation: true)
-      request.on_complete do |response|
-        if request.success?
-          return request.body
-        elsif request.timed_out?
-          raise forki::Error("Fetching image at #{url} timed out")
-        else
-          raise forki::Error("Fetching image at #{url} returned non-successful HTTP server response #{request.code}")
-        end
-      end
-    end
-
-
     # Extracts an integer out of a string describing a number
     # e.g. "4K Comments" returns 4000
     # e.g. "131 Shares" returns 131
     def extract_int_from_num_element(element)
       return unless element
-      if element.class != String
+      if element.class != String  # if an html element was passed in
         element = element.text(:all)
       end
       num_pattern = /[0-9KM ,.]+/
