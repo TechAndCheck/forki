@@ -29,19 +29,17 @@ module Forki
         return extract_video_post_data_from_watch_page(graphql_strings)  # If this is a "watch page" video
       end
       graphql_object_array = graphql_strings.map { |graphql_string| JSON.parse(graphql_string) }
-      feedback_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("creation_story") && \
-                                                       graphql_object.keys.include?("feedback")}
       sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("tahoe_sidepane_renderer") }
       video_object = graphql_object_array.find { |graphql_object| graphql_object.keys == ["video"] }
-
-      reaction_counts = extract_reaction_counts(feedback_object["feedback"]["top_reactions"])
-      share_count_object = feedback_object["feedback"].fetch("share_count", {})
+      feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
+      reaction_counts = extract_reaction_counts(feedback_object["top_reactions"])
+      share_count_object = feedback_object.fetch("share_count", {})
       post_details = {
         id: video_object["id"],
-        num_comments: feedback_object["feedback"]["comment_count"]["total_count"],
+        num_comments: feedback_object["comments_count_summary_renderer"]["feedback"]["comment_count"]["total_count"],
         num_shares: share_count_object.fetch("count", nil),
-        num_views: feedback_object["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
-        reshare_warning: feedback_object["feedback"]["should_show_reshare_warning"],
+        num_views: feedback_object["comments_count_summary_renderer"]["feedback"]["comment_count"]["total_count"],
+        reshare_warning: feedback_object["should_show_reshare_warning"],
         video_preview_image_url: video_object["video"]["preferred_thumbnail"]["image"]["uri"],
         video_url: video_object["video"]["playable_url_quality_hd"] || video_object["video"]["playable_url"],
         text: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["message"]["story"]["message"]["text"],

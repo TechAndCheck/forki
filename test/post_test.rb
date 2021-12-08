@@ -67,9 +67,10 @@ class PostTest < Minitest::Test
   end
 
   def test_a_video_post_by_a_page_retuns_properly_when_scraped
-    urls = %w[https://www.facebook.com/camille.mateo.90/videos/3046448408747570/
-              https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
-              https://www.facebook.com/161453087348302/videos/684374025476745/]
+    urls = ["https://www.facebook.com/Meta/videos/264436895517475"]
+    # urls = %w[https://www.facebook.com/camille.mateo.90/videos/3046448408747570/
+    #           https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
+    #           https://www.facebook.com/161453087348302/videos/684374025476745/]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
