@@ -20,6 +20,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile_image_file
       assert_not_nil user.profile_link
       assert_not_nil user.id
+      assert_not_nil user.profile
     end
   end
 
@@ -37,6 +38,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile_image_file
       assert_not_nil user.profile_link
       assert_not_nil user.id
+      assert_not_nil user.profile
     end
   end
 
@@ -55,6 +57,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile_image_file
       assert_not_nil user.profile_link
       assert_not_nil user.id
+      assert_not_nil user.profile
     end
   end
 end

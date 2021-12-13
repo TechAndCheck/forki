@@ -12,6 +12,7 @@ module Forki
                 :id,
                 :number_of_followers,
                 :verified,
+                :profile,
                 :profile_link,
                 :profile_image_file,
                 :profile_image_url,
@@ -24,6 +25,7 @@ module Forki
       @id = hash[:id]
       @number_of_followers = hash[:number_of_followers]
       @verified = hash[:verified]
+      @profile = hash[:profile]
       @profile_link = hash[:profile_link]
       @profile_image_file = hash[:profile_image_file]
       @profile_image_url = hash[:profile_image_url]

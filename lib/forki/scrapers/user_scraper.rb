@@ -22,13 +22,16 @@ module Forki
     # Returns a hash of details about a Facebook user profile
     def extract_profile_details(graphql_strings)
       profile_header_str = graphql_strings.find {|gql| gql.include? "profile_header_renderer" }
+      profile_intro_str = graphql_strings.find { |g| g.include? "profile_intro_card"}
       profile_header_obj = JSON.parse(profile_header_str)["user"]["profile_header_renderer"]
+      profile_intro_obj = profile_intro_str ? JSON.parse(profile_intro_str) : nil
       profile_title_sections_str = graphql_strings.find { |gql| gql.include? "show_prevet_blue_badge_modal_ig_verified" }
       {
         id: profile_header_obj["user"]["id"],
         number_of_followers: find_number_of_followers(profile_title_sections_str),
         name: profile_header_obj["user"]["name"],
         verified: profile_header_obj["user"]["is_verified"],
+        profile: profile_intro_obj ? profile_intro_obj["profile_intro_card"]["bio"]["text"] : "",
         profile_image_url: profile_header_obj["user"]["profilePicLarge"]["uri"],
       }
     end
@@ -43,6 +46,7 @@ module Forki
                                                                                graphql_string.include?("is_verified") })
       {
         id: page_about_card["page"]["id"],
+        profile: page_about_card["page"]["page_about_fields"]["blurb"],
         number_of_followers: page_about_card["page"]["follower_count"],
         name: page_about_card["page"]["name"],
         verified: viewer_page_object["page"]["is_verified"],
