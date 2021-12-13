@@ -29,7 +29,7 @@ module Forki
         number_of_followers: find_number_of_followers(profile_title_sections_str),
         name: profile_header_obj["user"]["name"],
         verified: profile_header_obj["user"]["is_verified"],
-        profile_image_url: profile_header_obj["user"]["profilePhoto"]["url"],
+        profile_image_url: profile_header_obj["user"]["profilePicLarge"]["uri"],
       }
     end
 
@@ -46,7 +46,7 @@ module Forki
         number_of_followers: page_about_card["page"]["follower_count"],
         name: page_about_card["page"]["name"],
         verified: viewer_page_object["page"]["is_verified"],
-        profile_image_url: viewer_page_object["page"]["profile_photo"]["url"],
+        profile_image_url: viewer_page_object["page"]["profile_picture"]["uri"],
         number_of_likes: page_about_card["page"]["page_likers"]["global_likers_count"],
       }
     end

@@ -9,7 +9,6 @@ class UserTest < Minitest::Test
   def test_a_public_profile_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/profile.php?id=100044487457347
               https://www.facebook.com/ezraklein]
-    # urls = ["https://www.facebook.com/ezraklein"]
     users = Forki::User.lookup(urls)
     users.each do |user|
       assert_not_nil user.name
