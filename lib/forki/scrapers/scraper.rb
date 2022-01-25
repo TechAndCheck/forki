@@ -7,14 +7,16 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 
-Capybara.default_driver = :selenium_chrome
-Capybara.app_host = "https://facebook.com"
-Capybara.default_max_wait_time = 15
-
 module Forki
 
   class Scraper
     include Capybara::DSL
+
+    def initialize
+      Capybara.default_driver = :selenium_chrome
+      Capybara.app_host = "https://facebook.com"
+      Capybara.default_max_wait_time = 15
+    end
 
     # Yeah, just use the tmp/ directory that's created during setup
     def download_image(img_elem)
