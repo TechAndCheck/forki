@@ -68,7 +68,7 @@ module Forki
 
       visit("/")  # Visit the Facebook home page
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
-      fill_in("pass", with: ENV["FACEBOOK_PW"])
+      fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
       sleep 3
     end
