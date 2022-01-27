@@ -32,7 +32,7 @@ module Forki
       sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("tahoe_sidepane_renderer") }
       video_object = graphql_object_array.find { |graphql_object| graphql_object.keys == ["video"] }
       feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
-      reaction_counts = extract_reaction_counts(feedback_object["top_reactions"])
+      reaction_counts = extract_reaction_counts(sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       share_count_object = feedback_object.fetch("share_count", {})
       post_details = {
         id: video_object["id"],
@@ -59,7 +59,7 @@ module Forki
       curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("currMedia") }
       creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("creation_story") && graphql_object.keys.include?("message") }
       poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
-      reaction_counts = extract_reaction_counts(viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["top_reactions"])
+      reaction_counts = extract_reaction_counts(viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       post_details = {
         id: curr_media_object["currMedia"]["id"],
         num_comments: viewer_actor_object["comment_count"]["total_count"],
@@ -84,7 +84,7 @@ module Forki
                                                             (graphql_string.include?("live_status")) } )
       video_permalink = creation_story_object["creation_story"]["shareable"]["url"].gsub("\\", "")
       media_object = video_object["video"]["story"]["attachments"][0]["media"]
-      reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["top_reactions"])
+      reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       post_details = {
         id: video_object["id"],
         num_comments: creation_story_object["feedback"]["comment_count"]["total_count"],
@@ -111,7 +111,7 @@ module Forki
                                                        (graphql.include? "creation_story") })["video"]["creation_story"]
       media_object = JSON.parse(graphql_strings.find { |graphql| graphql.include? "playable_url" } )["video"]["creation_story"]["attachments"][0]["media"]
       video_permalink = creation_story_object["shareable"]["url"].gsub("\\", "")
-      reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["top_reactions"])
+      reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["cannot_see_top_custom_reactions"]["top_reactions"])
       post_details = {
         id: creation_story_object["shareable"]["id"],
         num_comments: creation_story_object["feedback_context"]["feedback_target_with_context"]["comment_count"]["total_count"],
