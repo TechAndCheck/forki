@@ -28,7 +28,7 @@ module Forki
       profile_title_sections_str = graphql_strings.find { |gql| gql.include? "show_prevet_blue_badge_modal_ig_verified" }
       {
         id: profile_header_obj["user"]["id"],
-        number_of_followers: find_number_of_followers(profile_title_sections_str),
+        number_of_followers: find_number_of_followers(profile_header_str),
         name: profile_header_obj["user"]["name"],
         verified: profile_header_obj["user"]["is_verified"],
         profile: profile_intro_obj ? profile_intro_obj["profile_intro_card"]["bio"]["text"] : "",
