@@ -23,6 +23,12 @@ module Forki
       super
     end
   end
+  
+  class MissingCredentialsError < StandardError
+    def initalize(msg = "Missing FACEBOOK_EMAIL or FACEBOOK_PASSWORD environment variable")
+      super
+    end
+  end
 
   class Error < StandardError
     def initialize(msg = "forki encountered an error scraping Facebook")
