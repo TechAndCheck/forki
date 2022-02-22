@@ -2,7 +2,6 @@ require "typhoeus"
 
 module Forki
   class UserScraper < Scraper
-
     # Finds and returns the number of people who like the current page
     def find_number_of_likes
       likes_pattern = /[0-9,.KM ] people like this/
@@ -21,11 +20,11 @@ module Forki
 
     # Returns a hash of details about a Facebook user profile
     def extract_profile_details(graphql_strings)
-      profile_header_str = graphql_strings.find {|gql| gql.include? "profile_header_renderer" }
-      profile_intro_str = graphql_strings.find { |g| g.include? "profile_intro_card"}
+      profile_header_str = graphql_strings.find { |gql| gql.include? "profile_header_renderer" }
+      profile_intro_str = graphql_strings.find { |g| g.include? "profile_intro_card" }
       profile_header_obj = JSON.parse(profile_header_str)["user"]["profile_header_renderer"]
       profile_intro_obj = profile_intro_str ? JSON.parse(profile_intro_str) : nil
-      profile_title_sections_str = graphql_strings.find { |gql| gql.include? "show_prevet_blue_badge_modal_ig_verified" }
+
       {
         id: profile_header_obj["user"]["id"],
         number_of_followers: find_number_of_followers(profile_header_str),
@@ -38,11 +37,11 @@ module Forki
 
     # Returns a hash of details about a Facebook page
     def extract_page_details(graphql_strings)
-      page_cards_string = graphql_strings.find { |graphql_string| (graphql_string.include? "comet_page_cards") &&\
+      page_cards_string = graphql_strings.find { |graphql_string| (graphql_string.include? "comet_page_cards") && \
                                                                   (graphql_string.include? "follower_count")}
       page_cards_list = JSON.parse(page_cards_string)["page"]["comet_page_cards"]
       page_about_card = page_cards_list.find { |card| card["__typename"] == "CometPageAboutCardWithoutMapRenderer" }
-      viewer_page_object = JSON.parse(graphql_strings.find { |graphql_string| (graphql_string.include? "profile_photo") &&\
+      viewer_page_object = JSON.parse(graphql_strings.find { |graphql_string| (graphql_string.include? "profile_photo") && \
                                                                                graphql_string.include?("is_verified") })
       {
         id: page_about_card["page"]["id"],
@@ -59,7 +58,7 @@ module Forki
     def parse(url)
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
-      is_page = graphql_strings.map { |s| JSON.parse(s) }.any? {|o| o.keys.include?("page") }
+      is_page = graphql_strings.map { |s| JSON.parse(s) }.any? { |o| o.keys.include?("page") }
       user_details = is_page ? extract_page_details(graphql_strings) : extract_profile_details(graphql_strings)
 
       user_details[:profile_image_file] = Forki.retrieve_media(user_details[:profile_image_url])

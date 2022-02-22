@@ -2,15 +2,16 @@
 
 require "typhoeus"
 
-module Forki
-  class PostScraper < Scraper
 
+module Forki
+  # rubocop:disable Metrics/ClassLength
+  class PostScraper < Scraper
     # Searches the DOM to finds the number of times a (video) post has been viewed.
     # Returns nil if it can't find a DOM element with the view count
     def find_number_of_views
       views_pattern = /[0-9MK, ]+Views/
       spans = all("span")
-      views_span = spans.find { | s| s.text(:all) =~ views_pattern}
+      views_span = spans.find { |s| s.text(:all) =~ views_pattern }
       extract_int_from_num_element(views_span)
     end
 
@@ -81,8 +82,8 @@ module Forki
       return extract_live_video_post_data_from_watch_page(graphql_strings) if current_url.include?("live")
       video_object = graphql_strings.map { |g| JSON.parse(g) }.find { |x| x.keys.include?("video") }
       creation_story_object = JSON.parse(graphql_strings.find { |graphql_string| (graphql_string.include?("creation_story")) && \
-                                                            (graphql_string.include?("live_status")) } )
-      video_permalink = creation_story_object["creation_story"]["shareable"]["url"].gsub("\\", "")
+                                                            (graphql_string.include?("live_status")) })
+      video_permalink = creation_story_object["creation_story"]["shareable"]["url"].delete("\\")
       media_object = video_object["video"]["story"]["attachments"][0]["media"]
       reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       post_details = {
@@ -92,7 +93,7 @@ module Forki
         num_views: creation_story_object["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
         reshare_warning: creation_story_object["feedback"]["should_show_reshare_warning"],
         video_preview_image_url: video_object["video"]["story"]["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).gsub("\\", ""),
+        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\"),
         text: (creation_story_object["creation_story"]["message"] || {})["text"],
         created_at: video_object["video"]["story"]["attachments"][0]["media"]["publish_time"],
         profile_link: video_permalink[..video_permalink.index("/videos")],
@@ -102,15 +103,14 @@ module Forki
       post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
       post_details
-
     end
 
     # Extract data from live video post on the watch page
     def extract_live_video_post_data_from_watch_page(graphql_strings)
       creation_story_object = JSON.parse(graphql_strings.find { |graphql| (graphql.include? "comment_count") && \
                                                        (graphql.include? "creation_story") })["video"]["creation_story"]
-      media_object = JSON.parse(graphql_strings.find { |graphql| graphql.include? "playable_url" } )["video"]["creation_story"]["attachments"][0]["media"]
-      video_permalink = creation_story_object["shareable"]["url"].gsub("\\", "")
+      media_object = JSON.parse(graphql_strings.find { |graphql| graphql.include? "playable_url" })["video"]["creation_story"]["attachments"][0]["media"]
+      video_permalink = creation_story_object["shareable"]["url"].delete("\\")
       reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["cannot_see_top_custom_reactions"]["top_reactions"])
       post_details = {
         id: creation_story_object["shareable"]["id"],
@@ -119,7 +119,7 @@ module Forki
         num_views: find_number_of_views, # as far as I can tell, this is never present for live videos
         reshare_warning: creation_story_object["feedback_context"]["feedback_target_with_context"]["should_show_reshare_warning"],
         video_preview_image_url: creation_story_object["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).gsub("\\", ""),
+        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\"),
         text: creation_story_object["attachments"][0]["media"]["savable_description"]["text"],
         created_at: creation_story_object["attachments"][0]["media"]["publish_time"],
         profile_link: video_permalink[..video_permalink.index("/videos")],

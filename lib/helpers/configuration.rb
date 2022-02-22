@@ -2,7 +2,6 @@
 
 # Borrowed with thanks from https://www.viget.com/articles/easy-gem-configuration-variables-with-defaults/
 module Configuration
-
   def configuration
     yield self
   end
@@ -21,10 +20,9 @@ module Configuration
 
  private
 
-  def define_class_method(name, &block)
-    (class << self; self; end).instance_eval do
-      define_method name, &block
-    end
-  end
-
+   def define_class_method(name, &block)
+     (class << self; self; end).instance_eval do
+       define_method name, &block
+     end
+   end
 end

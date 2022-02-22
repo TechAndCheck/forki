@@ -2,6 +2,7 @@
 
 require "test_helper"
 
+# rubocop:disable Metrics/ClassLength
 class PostTest < Minitest::Test
   def teardown
     cleanup_temp_folder
@@ -13,12 +14,12 @@ class PostTest < Minitest::Test
               https://www.facebook.com/PresidentDonaldTrumpFanPage/photos/a.711866182180811/3317607074940029/]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
-      refute post.has_video
+      assert_not post.has_video
       assert_nil post.num_views # images do not have views
 
-      assert post.num_shares > 0
-      assert post.num_comments > 0
-      assert post.reactions.length > 0
+      assert post.num_shares.positive?
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
 
       assert_not_nil post.image_file
 
@@ -34,12 +35,12 @@ class PostTest < Minitest::Test
               https://www.facebook.com/photo.php?fbid=10217495563806354]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
-      refute post.has_video
+      assert_not post.has_video
       assert_nil post.num_views
 
-      assert post.num_shares > 0
-      assert post.num_comments > 0
-      assert post.reactions.length > 0
+      assert post.num_shares.positive?
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
 
       assert_not_nil post.image_file
 
@@ -52,10 +53,10 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup("https://www.facebook.com/cory.hurlburt/videos/10163562367665117/")
     posts.each do |post|
       assert post.has_video
-      assert post.num_views > 0
+      assert post.num_views.positive?
 
-      assert post.num_comments > 0
-      assert post.reactions.length > 0
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
       assert_nil post.image_file
@@ -74,10 +75,10 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
-      assert post.num_views > 0
+      assert post.num_views.positive?
 
-      assert post.num_comments > 0
-      assert post.reactions.length > 0
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
       assert_nil post.image_file
@@ -94,10 +95,10 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
-      assert post.num_views > 0
+      assert post.num_views.positive?
 
-      assert post.num_comments > 0
-      assert post.reactions.length > 0
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
       assert_nil post.image_file
@@ -108,24 +109,24 @@ class PostTest < Minitest::Test
     end
   end
 
-    def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
-      urls = %w[https://www.facebook.com/watch/live/?v=960083361438600]
-      posts = Forki::Post.lookup(urls)
-      posts.each do |post|
-        assert post.has_video
-        # assert post.num_views > 0  # live videos may not have views listed
+  def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
+    urls = %w[https://www.facebook.com/watch/live/?v=960083361438600]
+    posts = Forki::Post.lookup(urls)
+    posts.each do |post|
+      assert post.has_video
+      # assert post.num_views > 0  # live videos may not have views listed
 
-        assert post.num_comments > 0
-        assert post.reactions.length > 0
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
 
-        assert_not_nil post.video_file
-        assert_nil post.image_file
-        assert_not_nil post.video_preview_image_file
+      assert_not_nil post.video_file
+      assert_nil post.image_file
+      assert_not_nil post.video_preview_image_file
 
-        assert_not_nil post.user
-        assert_not_nil post.created_at
-      end
+      assert_not_nil post.user
+      assert_not_nil post.created_at
     end
+  end
 
   def test_scraping_a_bad_url_raises_invalid_url_exception
     assert_raises "invalid url" do

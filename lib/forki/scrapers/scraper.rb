@@ -8,7 +8,6 @@ require "selenium-webdriver"
 require "open-uri"
 
 module Forki
-
   class Scraper
     include Capybara::DSL
 
@@ -55,14 +54,12 @@ module Forki
         # brace_stack += 1 if str[ind] == '{'
         # brace_stack -= 1 if str[ind] == '{'
         ind += 1
-        break if brace_stack == 0
+        break if brace_stack.zero?
       end
       ind
     end
 
-
-    private
-
+  private
 
     # Logs in to Facebook (only on browser startup)
     def login
@@ -103,10 +100,9 @@ module Forki
       elsif interaction_num_text.include?("M") # e.g. "13M"
         interaction_num_text.to_i * 1_000_000
       else  # e.g. "15,443"
-        interaction_num_text.gsub(",", "").gsub(" ", "").to_i
+        interaction_num_text.delete([",", " "]).to_i
       end
     end
-
   end
 end
 

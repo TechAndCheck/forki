@@ -48,12 +48,12 @@ module Forki
     class << self
       private
 
-      def scrape(urls)
-        urls.map do |url|
-          post_hash = Forki::PostScraper.new.parse(url)
-          Post.new(post_hash)
+        def scrape(urls)
+          urls.map do |url|
+            post_hash = Forki::PostScraper.new.parse(url)
+            Post.new(post_hash)
+          end
         end
-      end
     end
   end
 end
