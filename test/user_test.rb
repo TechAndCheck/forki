@@ -51,7 +51,7 @@ class UserTest < Minitest::Test
 
       assert_nil user.number_of_followers
       assert_nil user.number_of_likes
-      assert_not user.verified
+      assert user.verified == false
 
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file

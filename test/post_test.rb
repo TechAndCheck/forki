@@ -14,7 +14,7 @@ class PostTest < Minitest::Test
               https://www.facebook.com/PresidentDonaldTrumpFanPage/photos/a.711866182180811/3317607074940029/]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
-      assert_not post.has_video
+      assert post.has_video == false
       assert_nil post.num_views # images do not have views
 
       assert post.num_shares.positive?
@@ -35,7 +35,7 @@ class PostTest < Minitest::Test
               https://www.facebook.com/photo.php?fbid=10217495563806354]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
-      assert_not post.has_video
+      assert post.has_video == false
       assert_nil post.num_views
 
       assert post.num_shares.positive?

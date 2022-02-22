@@ -80,8 +80,21 @@ module Forki
       visit "https://www.facebook.com" if !facebook_url_pattern.match?(current_url)
       login
       raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
+
+
       visit url
-      raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
+      retry_count = 0
+      while retry_count < 5
+        begin
+          raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
+          break
+        rescue Selenium::WebDriver::Error::StaleElementReferenceError => error
+          print "Error scraping spans, trying again. Count: #{retry_count}\n"
+          retry_count += 1
+          error.raise if retry_count == 5
+          refresh
+        end
+      end
     end
 
     # Extracts an integer out of a string describing a number
