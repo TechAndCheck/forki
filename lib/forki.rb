@@ -23,6 +23,12 @@ module Forki
       super
     end
   end
+  
+  class MissingCredentialsError < StandardError
+    def initalize(msg = "Missing FACEBOOK_EMAIL or FACEBOOK_PASSWORD environment variable")
+      super
+    end
+  end
 
   class Error < StandardError
     def initialize(msg = "forki encountered an error scraping Facebook")
@@ -42,7 +48,7 @@ module Forki
 
     # Do some basic checks so we just empty out if there's something weird in the file extension
     # that could do some harm.
-    if extension.length > 0
+    if extension.length.positive?
       extension = nil unless /^[a-zA-Z0-9]+$/.match?(extension)
       extension = ".#{extension}" unless extension.nil?
     end
@@ -61,6 +67,4 @@ private
     return if File.exist?(Forki.temp_storage_location) && File.directory?(Forki.temp_storage_location)
     FileUtils.mkdir_p Forki.temp_storage_location
   end
-
 end
-

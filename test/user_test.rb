@@ -12,7 +12,7 @@ class UserTest < Minitest::Test
     users = Forki::User.lookup(urls)
     users.each do |user|
       assert_not_nil user.name
-      assert user.number_of_followers > 0
+      assert user.number_of_followers.positive?
       assert user.number_of_likes.nil?
       assert user.verified
 
@@ -30,8 +30,8 @@ class UserTest < Minitest::Test
     users = Forki::User.lookup(urls)
     users.each do |user|
       assert_not_nil user.name
-      assert user.number_of_followers > 0
-      assert user.number_of_likes > 0
+      assert user.number_of_followers.positive?
+      assert user.number_of_likes.positive?
       assert user.verified
 
       assert_not_nil user.profile_image_url
@@ -51,7 +51,7 @@ class UserTest < Minitest::Test
 
       assert_nil user.number_of_followers
       assert_nil user.number_of_likes
-      refute user.verified
+      assert user.verified == false
 
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file

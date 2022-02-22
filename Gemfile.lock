@@ -48,12 +48,6 @@ GEM
     nokogiri (1.12.5)
       mini_portile2 (~> 2.6.1)
       racc (~> 1.4)
-    nokogiri (1.12.5-arm64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.12.5-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.12.5-x86_64-linux)
-      racc (~> 1.4)
     oj (3.13.9)
     parallel (1.21.0)
     parser (3.0.2.0)
@@ -104,6 +98,7 @@ PLATFORMS
   arm64-darwin-20
   arm64-darwin-21
   armv7l-linux-eabihf
+  ruby
   x86_64-darwin-19
   x86_64-darwin-20
   x86_64-linux

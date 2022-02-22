@@ -8,7 +8,6 @@ require "selenium-webdriver"
 require "open-uri"
 
 module Forki
-
   class Scraper
     include Capybara::DSL
 
@@ -55,18 +54,17 @@ module Forki
         # brace_stack += 1 if str[ind] == '{'
         # brace_stack -= 1 if str[ind] == '{'
         ind += 1
-        break if brace_stack == 0
+        break if brace_stack.zero?
       end
       ind
     end
 
+  private
 
-    private
-
-
-    # Logs in to Facebook (only on browser startup)
+    # Logs in to Facebook (if not already logged in)
     def login
-      return if current_url.include? "facebook"
+      return if !page.title.include?("Facebook - Log In")  # We should only see this page title if we aren't logged in
+      raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
       visit("/")  # Visit the Facebook home page
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
@@ -78,11 +76,25 @@ module Forki
     # Ensures that a valid Facebook url has bene provided, and that it points to an available post
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
-      login
       facebook_url_pattern = /https:\/\/www.facebook.com\//
+      visit "https://www.facebook.com" if !facebook_url_pattern.match?(current_url)
+      login
       raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
+
+
       visit url
-      raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
+      retry_count = 0
+      while retry_count < 5
+        begin
+          raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
+          break
+        rescue Selenium::WebDriver::Error::StaleElementReferenceError => error
+          print "Error scraping spans, trying again. Count: #{retry_count}\n"
+          retry_count += 1
+          error.raise if retry_count == 5
+          refresh
+        end
+      end
     end
 
     # Extracts an integer out of a string describing a number
@@ -103,10 +115,9 @@ module Forki
       elsif interaction_num_text.include?("M") # e.g. "13M"
         interaction_num_text.to_i * 1_000_000
       else  # e.g. "15,443"
-        interaction_num_text.gsub(",", "").gsub(" ", "").to_i
+        interaction_num_text.delete([",", " "]).to_i
       end
     end
-
   end
 end
 
