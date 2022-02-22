@@ -66,8 +66,7 @@ module Forki
 
     # Logs in to Facebook (only on browser startup)
     def login
-      return if current_url.include? "facebook"
-
+      return if !page.title.include?("Facebook - Log In")
       visit("/")  # Visit the Facebook home page
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
@@ -78,8 +77,9 @@ module Forki
     # Ensures that a valid Facebook url has bene provided, and that it points to an available post
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
-      login
       facebook_url_pattern = /https:\/\/www.facebook.com\//
+      visit "https://www.facebook.com" if !facebook_url_pattern.match?(current_url)
+      login
       raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
       visit url
       raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
