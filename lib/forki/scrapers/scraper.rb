@@ -89,10 +89,12 @@ module Forki
           raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
           break
         rescue Selenium::WebDriver::Error::StaleElementReferenceError => error
-          print "Error scraping spans, trying again. Count: #{retry_count}\n"
+          print({ error: "Error scraping spans", url: url, count: retry_count }.to_json)
           retry_count += 1
-          error.raise if retry_count == 5
+          raise error if retry_count > 4
           refresh
+          # Give it a second (well, five)
+          sleep(5)
         end
       end
     end
