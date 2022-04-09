@@ -50,7 +50,8 @@ class PostTest < Minitest::Test
   end
 
   def test_a_video_post_by_a_user_returns_properly_when_scraped
-    posts = Forki::Post.lookup("https://www.facebook.com/cory.hurlburt/videos/10163562367665117/")
+    posts = Forki::Post.lookup(%w[ https://www.facebook.com/camille.mateo.90/posts/3046448408747570/
+                                        https://www.facebook.com/cory.hurlburt/videos/10163562367665117/])
     posts.each do |post|
       assert post.has_video
       assert post.num_views.positive?
@@ -68,10 +69,9 @@ class PostTest < Minitest::Test
   end
 
   def test_a_video_post_by_a_page_retuns_properly_when_scraped
-    urls = ["https://www.facebook.com/Meta/videos/264436895517475"]
-    # urls = %w[https://www.facebook.com/camille.mateo.90/videos/3046448408747570/
-    #           https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
-    #           https://www.facebook.com/161453087348302/videos/684374025476745/]
+    urls = %w[https://www.facebook.com/161453087348302/videos/684374025476745/
+              https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
+              https://www.facebook.com/Meta/videos/264436895517475]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
@@ -114,7 +114,6 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
-      # assert post.num_views > 0  # live videos may not have views listed
 
       assert post.num_comments.positive?
       assert post.reactions.length.positive?
