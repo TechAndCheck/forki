@@ -81,17 +81,16 @@ module Forki
       login
       raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
 
-
       visit url
       retry_count = 0
       while retry_count < 5
         begin
           raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
           break
-        rescue Selenium::WebDriver::Error::StaleElementReferenceError => error
+        rescue Selenium::WebDriver::Error::StaleElementReferenceError
           print({ error: "Error scraping spans", url: url, count: retry_count }.to_json)
           retry_count += 1
-          raise error if retry_count > 4
+          raise Forki::RetryableError("Stale page element reference") if retry_count > 4
           refresh
           # Give it a second (well, five)
           sleep(5)
@@ -104,7 +103,8 @@ module Forki
     # e.g. "131 Shares" returns 131
     def extract_int_from_num_element(element)
       return unless element
-      if element.class != String  # if an html element was passed in
+
+      if element.class != String # if an html element was passed in
         element = element.text(:all)
       end
       num_pattern = /[0-9KM ,.]+/

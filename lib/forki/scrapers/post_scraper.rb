@@ -2,7 +2,6 @@
 
 require "typhoeus"
 
-
 module Forki
   # rubocop:disable Metrics/ClassLength
   class PostScraper < Scraper
@@ -32,8 +31,8 @@ module Forki
         return extract_video_post_data_from_watch_page(graphql_strings)  # If this is a "watch page" video
       end
       graphql_object_array = graphql_strings.map { |graphql_string| JSON.parse(graphql_string) }
-      story_node_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include? "node" }&.fetch("node", nil)  # user posted video
-      story_node_object = story_node_object || graphql_object_array.find { |graphql_object| graphql_object.keys.include? "nodes" }&.fetch("nodes")&.first  # page posted video
+      story_node_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include? "node" }&.fetch("node", nil) # user posted video
+      story_node_object = story_node_object || graphql_object_array.find { |graphql_object| graphql_object.keys.include? "nodes" }&.fetch("nodes")&.first # page posted video
       return extract_video_post_data_alternative(graphql_object_array) if story_node_object.nil?
       video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
       feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
