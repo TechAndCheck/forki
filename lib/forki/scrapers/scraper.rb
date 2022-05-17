@@ -7,6 +7,11 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 
+Capybara.default_max_wait_time = 15
+Capybara.threadsafe = true
+Capybara.reuse_server = true
+Capybara.app_host = "https://facebook.com"
+
 module Forki
   class Scraper
     include Capybara::DSL
@@ -14,7 +19,6 @@ module Forki
     def initialize
       Capybara.default_driver = :selenium_chrome
       Capybara.app_host = "https://facebook.com"
-      Capybara.default_max_wait_time = 15
     end
 
     # Yeah, just use the tmp/ directory that's created during setup
@@ -38,48 +42,46 @@ module Forki
     end
 
     def find_graphql_data_closure_index(html_str, start_index)
-      ind = start_index + 8 # length of data marker. Begin search right after open brace
-      nil if ind > html_str.length
+      closure_index = start_index + 8 # length of data marker. Begin search right after open brace
+      raise "Malformed graphql data object: no closing bracket found" if closure_index > html_str.length
 
       brace_stack = 1
       loop do  # search for brace characters in substring instead of iterating through each char
-        if html_str[ind] == "{"
+        if html_str[closure_index] == "{"
           brace_stack += 1
-          # puts "Brace open: #{brace_stack}"
-        elsif html_str[ind] == "}"
+        elsif html_str[closure_index] == "}"
           brace_stack -= 1
-          # puts "Brace close: #{brace_stack}"
         end
 
-        # brace_stack += 1 if str[ind] == '{'
-        # brace_stack -= 1 if str[ind] == '{'
-        ind += 1
+        closure_index += 1
         break if brace_stack.zero?
       end
-      ind
+
+      closure_index
     end
 
   private
 
     # Logs in to Facebook (if not already logged in)
     def login
-      return if !page.title.include?("Facebook - Log In")  # We should only see this page title if we aren't logged in
+      return if !page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
-      visit("/")  # Visit the Facebook home page
+
+      visit("https://www.facebook.com")  # Visit the Facebook home page
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
       sleep 3
     end
 
-    # Ensures that a valid Facebook url has bene provided, and that it points to an available post
+    # Ensures that a valid Facebook url has been provided, and that it points to an available post
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
-      facebook_url_pattern = /https:\/\/www.facebook.com\//
-      visit "https://www.facebook.com" if !facebook_url_pattern.match?(current_url)
+      facebook_url = "https://www.facebook.com"
+      visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
       login
-      raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
+      raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
 
 
       visit url
