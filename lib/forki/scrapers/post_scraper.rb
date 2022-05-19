@@ -2,7 +2,6 @@
 
 require "typhoeus"
 
-
 module Forki
   # rubocop:disable Metrics/ClassLength
   class PostScraper < Scraper
@@ -98,6 +97,33 @@ module Forki
         return extract_video_post_data_from_watch_page(graphql_strings)  # If this is a "watch page" video
       end
       graphql_object_array = graphql_strings.map { |graphql_string| JSON.parse(graphql_string) }
+      story_node_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include? "node" }&.fetch("node", nil) # user posted video
+      story_node_object = story_node_object || graphql_object_array.find { |graphql_object| graphql_object.keys.include? "nodes" }&.fetch("nodes")&.first # page posted video
+      return extract_video_post_data_alternative(graphql_object_array) if story_node_object.nil?
+      video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
+      feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
+      reaction_counts = extract_reaction_counts(feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      share_count_object = feedback_object.fetch("share_count", {})
+      post_details = {
+        id: video_object["id"],
+        num_comments: feedback_object["comment_count"]["total_count"],
+        num_shares: share_count_object.fetch("count", nil),
+        num_views: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["video_view_count"],
+        reshare_warning: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"],
+        video_preview_image_url: video_object["preferred_thumbnail"]["image"]["uri"],
+        video_url: video_object["playable_url_quality_hd"] || video_object["playable_url"],
+        text: story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"],
+        created_at: video_object["publish_time"],
+        profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
+        has_video: true
+      }
+      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
+      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:reactions] = reaction_counts
+      post_details
+    end
+
+    def extract_video_post_data_alternative(graphql_object_array)
       sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("tahoe_sidepane_renderer") }
       video_object = graphql_object_array.find { |graphql_object| graphql_object.keys == ["video"] }
       feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
