@@ -29,6 +29,27 @@ class PostTest < Minitest::Test
     end
   end
 
+  def test_that_a_video_post_in_a_comment_thread_is_detected_correctly
+    urls = %w[https://www.facebook.com/PlandemicMovie/videos/588866298398729/]
+
+    posts = Forki::Post.lookup(urls)
+
+    posts.each do |post|
+      assert post.has_video
+      # assert post.num_views > 0  # live videos may not have views listed
+
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
+
+      assert_not_nil post.video_file
+      assert_nil post.image_file
+      assert_not_nil post.video_preview_image_file
+
+      assert_not_nil post.user
+      assert_not_nil post.created_at
+    end
+  end
+
   def test_an_image_post_by_a_user_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/photo.php?fbid=10213343702266063
               https://www.facebook.com/photo.php?fbid=3038249389564729
@@ -50,8 +71,7 @@ class PostTest < Minitest::Test
   end
 
   def test_a_video_post_by_a_user_returns_properly_when_scraped
-    posts = Forki::Post.lookup(%w[ https://www.facebook.com/camille.mateo.90/posts/3046448408747570/
-                                        https://www.facebook.com/cory.hurlburt/videos/10163562367665117/])
+    posts = Forki::Post.lookup("https://www.facebook.com/Meta/videos/264436895517475")
     posts.each do |post|
       assert post.has_video
       assert post.num_views.positive?
