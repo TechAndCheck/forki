@@ -78,6 +78,8 @@ module Forki
     # Ensures that a valid Facebook url has been provided, and that it points to an available post
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
+      Capybara.app_host = "https://www.facebook.com"
+
       facebook_url = "https://www.facebook.com"
       visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
       login
