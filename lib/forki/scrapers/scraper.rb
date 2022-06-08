@@ -6,7 +6,7 @@ require "dotenv/load"
 require "oj"
 require "selenium-webdriver"
 require "open-uri"
- 
+
 options = Selenium::WebDriver::Chrome::Options.new
 options.add_argument("--window-size=1400,1400")
 options.add_argument("--no-sandbox")
@@ -29,11 +29,9 @@ module Forki
   class Scraper
     include Capybara::DSL
 
-    @@logger = Logger.new(STDOUT)
-    @@logger.level = Logger::WARN
-
     def initialize
       Capybara.default_driver = :chrome
+      Forki.set_logger_level
     end
 
     # Yeah, just use the tmp/ directory that's created during setup

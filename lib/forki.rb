@@ -12,6 +12,8 @@ require_relative "forki/scrapers/scraper"
 module Forki
   extend Configuration
 
+  @@logger = Logger.new(STDOUT)
+
   class Error < StandardError; end
   class RetryableError < Error; end
 
@@ -35,10 +37,13 @@ module Forki
 
   define_setting :temp_storage_location, "tmp/forki"
 
+
   # Get an image from a URL and save to a temp folder set in the configuration under
   # temp_storage_location
   def self.retrieve_media(url)
+    @@logger.info("Forki is downloading media from #{url}")
     response = Typhoeus.get(url)
+    @@logger.info("Forki has finished downloading media from #{url}")
 
     # Get the file extension if it's in the file
     extension = url.split(".").last
@@ -62,5 +67,13 @@ module Forki
     return if File.exist?(Forki.temp_storage_location) && File.directory?(Forki.temp_storage_location)
 
     FileUtils.mkdir_p Forki.temp_storage_location
+  end
+
+  def self.set_logger_level
+    if ENV["RAILS_ENV"] == "test" || ENV["RAILS_ENV"] == "development"
+      @@logger.level = Logger::INFO
+    else
+      @@logger.level = Logger::WARN
+    end
   end
 end

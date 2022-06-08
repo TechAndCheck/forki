@@ -5,6 +5,8 @@ require "forki"
 
 require "minitest/autorun"
 
+ENV["RAILS_ENV"] ||= "test"
+
 def cleanup_temp_folder
   # Delete the temp folder that'll be created here
   if File.exist?("tmp") && File.directory?("tmp")
