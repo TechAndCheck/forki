@@ -7,10 +7,27 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 
+<<<<<<< Updated upstream
 Capybara.default_max_wait_time = 15
+=======
+options = Selenium::WebDriver::Chrome::Options.new
+options.add_argument("--window-size=1400,1400")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--user-data-dir=/tmp/tarun")
+
+
+Capybara.register_driver :chrome do |app|
+  client = Selenium::WebDriver::Remote::Http::Default.new
+  client.read_timeout = 10  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
+  Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
+end
+
+Capybara.default_max_wait_time = 60
+>>>>>>> Stashed changes
 Capybara.threadsafe = true
 Capybara.reuse_server = true
-Capybara.app_host = "https://facebook.com"
+# Capybara.app_host = "https://facebook.com"
 
 module Forki
   class Scraper
