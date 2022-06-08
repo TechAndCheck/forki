@@ -36,7 +36,7 @@ module Forki
     end
 
     def check_if_post_is_video(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.keys.include?("video") }
+      graphql_objects.any? { |graphql_object| graphql_object.keys.include?("is_live_streaming") | graphql_object.keys.include?("video") }
     end
 
     def check_if_post_is_in_comment_stream(graphql_objects)
