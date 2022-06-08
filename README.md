@@ -35,6 +35,35 @@ Or install it yourself as:
 
     $ gem install forki
 
+### Selenium standalone
+
+We use Selenium's standalone package. To set it up:
+
+1. Download the "Selenium Server (Grid)" JAR package at https://www.selenium.dev/downloads/
+2. Save it to the folder of this package
+3. Test that it works by running java -jar ./selenium-server-4.2.1.jar standalone (note the actual version you downloaded)
+
+## Testing
+
+1. Turn on the Selenium server java -jar ./selenium-server-4.2.1.jar standalone in a separate pane or window
+2. `rake test`
+    
+## Debugging
+
+This scraper is prone to break pretty often due to Facebook's GraphQL schema being pretty damn unstable.
+Whether this is malevolent (to purposely break scrapers) or just happening in the course of development is undetermined and really, doesn't matter.
+
+Debugging this is a bit of a pain, but I'm laying out a few steps to start at and make this easier.
+Some of this may sound basic, but it's good to keep it all in mind.
+
+1. Run the tests `rake test` and note the line where everything is breaking. If the tests consistently fail on a single line, Facebook has likely changed the schema for a certain type of media (e.g., live videos, page photos). 
+2. Set a debug point at the top of the function where the failures are occurring. Step through the the code as it extracts GraphQL objects. If you find that one of the extracted objects is `nil`, you've discovered the place where Facebook has changed its schema and which GraphQL object we no longer have access to.  
+3. Find a new place to extract the Facebook post/user attributes we used to grab from the now-missing GraphQL object. Try grepping through the `graphql_strings` array to find the key of the attribute you need to grab data for.
+4. Repeat step 3 for each attribute we used to draw from the GraphQL object identified in step 2.
+5. Trust the tests, run them over and over, modifying as little about the rest of the code as possible,
+   otherwise you may end up changing the structure of everything, we don't want that.
+6. Ask Chris or Asa if you have questions.
+
 ## Usage
 
 TODO: Write usage instructions here
