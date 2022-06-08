@@ -7,9 +7,6 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 
-<<<<<<< Updated upstream
-Capybara.default_max_wait_time = 15
-=======
 options = Selenium::WebDriver::Chrome::Options.new
 options.add_argument("--window-size=1400,1400")
 options.add_argument("--no-sandbox")
@@ -24,18 +21,16 @@ Capybara.register_driver :chrome do |app|
 end
 
 Capybara.default_max_wait_time = 60
->>>>>>> Stashed changes
 Capybara.threadsafe = true
 Capybara.reuse_server = true
-# Capybara.app_host = "https://facebook.com"
 
 module Forki
   class Scraper
     include Capybara::DSL
 
     def initialize
-      Capybara.default_driver = :selenium_chrome
-      Capybara.app_host = "https://facebook.com"
+      Capybara.default_driver = :chrome
+      Forki.set_logger_level
     end
 
     # Yeah, just use the tmp/ directory that's created during setup
