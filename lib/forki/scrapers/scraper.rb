@@ -20,7 +20,6 @@ Capybara.register_driver :chrome do |app|
   Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
 end
 
-# Capybara.default_driver = :selenium_chrome
 Capybara.default_max_wait_time = 15
 Capybara.threadsafe = true
 Capybara.reuse_server = true
@@ -58,25 +57,22 @@ module Forki
     end
 
     def find_graphql_data_closure_index(html_str, start_index)
-      ind = start_index + 8 # length of data marker. Begin search right after open brace
-      nil if ind > html_str.length
+      closure_index = start_index + 8 # length of data marker. Begin search right after open brace
+      raise "Malformed graphql data object: no closing bracket found" if closure_index > html_str.length
 
       brace_stack = 1
       loop do  # search for brace characters in substring instead of iterating through each char
-        if html_str[ind] == "{"
+        if html_str[closure_index] == "{"
           brace_stack += 1
-          # puts "Brace open: #{brace_stack}"
-        elsif html_str[ind] == "}"
+        elsif html_str[closure_index] == "}"
           brace_stack -= 1
-          # puts "Brace close: #{brace_stack}"
         end
 
-        # brace_stack += 1 if str[ind] == '{'
-        # brace_stack -= 1 if str[ind] == '{'
-        ind += 1
+        closure_index += 1
         break if brace_stack.zero?
       end
-      ind
+
+      closure_index
     end
 
   private
@@ -86,21 +82,23 @@ module Forki
       return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
-      visit("/")  # Visit the Facebook home page
+
+      visit("https://www.facebook.com")  # Visit the Facebook home page
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
       sleep 3
     end
 
-    # Ensures that a valid Facebook url has bene provided, and that it points to an available post
+    # Ensures that a valid Facebook url has been provided, and that it points to an available post
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
-      facebook_url_pattern = /https:\/\/www.facebook.com\//
-      visit "https://www.facebook.com" if !facebook_url_pattern.match?(current_url)
-      login
-      raise Forki::InvalidUrlError unless facebook_url_pattern.match?(url)
+      Capybara.app_host = "https://www.facebook.com"
 
+      facebook_url = "https://www.facebook.com"
+      visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
+      login
+      raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
 
       visit url
       retry_count = 0
@@ -108,10 +106,10 @@ module Forki
         begin
           raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
           break
-        rescue Selenium::WebDriver::Error::StaleElementReferenceError => error
+        rescue Selenium::WebDriver::Error::StaleElementReferenceError
           print({ error: "Error scraping spans", url: url, count: retry_count }.to_json)
           retry_count += 1
-          raise error if retry_count > 4
+          raise Forki::RetryableError("Stale page element reference") if retry_count > 4
           refresh
           # Give it a second (well, five)
           sleep(5)
@@ -124,7 +122,8 @@ module Forki
     # e.g. "131 Shares" returns 131
     def extract_int_from_num_element(element)
       return unless element
-      if element.class != String  # if an html element was passed in
+
+      if element.class != String # if an html element was passed in
         element = element.text(:all)
       end
       num_pattern = /[0-9KM ,.]+/

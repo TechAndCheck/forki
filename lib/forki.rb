@@ -12,6 +12,9 @@ require_relative "forki/scrapers/scraper"
 module Forki
   extend Configuration
 
+  class Error < StandardError; end
+  class RetryableError < Error; end
+
   class InvalidUrlError < StandardError
     def initialize(msg = "Url must be a proper Facebook Url")
       super
@@ -23,15 +26,9 @@ module Forki
       super
     end
   end
-  
+
   class MissingCredentialsError < StandardError
     def initalize(msg = "Missing FACEBOOK_EMAIL or FACEBOOK_PASSWORD environment variable")
-      super
-    end
-  end
-
-  class Error < StandardError
-    def initialize(msg = "forki encountered an error scraping Facebook")
       super
     end
   end
@@ -56,15 +53,14 @@ module Forki
     temp_file = "#{Forki.temp_storage_location}/#{SecureRandom.uuid}#{extension}"
 
     # We do this in case the folder isn't created yet, since it's a temp folder we'll just do so
-    self.create_temp_storage_location
+    create_temp_storage_location
     File.binwrite(temp_file, response.body)
     temp_file
   end
 
-private
-
   def self.create_temp_storage_location
     return if File.exist?(Forki.temp_storage_location) && File.directory?(Forki.temp_storage_location)
+
     FileUtils.mkdir_p Forki.temp_storage_location
   end
 end
