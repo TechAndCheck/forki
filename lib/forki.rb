@@ -12,7 +12,7 @@ require_relative "forki/scrapers/scraper"
 module Forki
   extend Configuration
 
-  @@logger = Logger.new(STDOUT)
+  @@forki_logger = Logger.new(STDOUT)
 
   class Error < StandardError; end
   class RetryableError < Error; end
@@ -41,7 +41,7 @@ module Forki
   # Get an image from a URL and save to a temp folder set in the configuration under
   # temp_storage_location
   def self.retrieve_media(url)
-    @@logger.info("Forki download started: #{url}")
+    @@forki_logger.info("Forki download started: #{url}")
     start_time = Time.now
 
     response = Typhoeus.get(url)
@@ -62,10 +62,10 @@ module Forki
     create_temp_storage_location
     File.binwrite(temp_file, response.body)
 
-    @@logger.info("Forki download finished")
-    @@logger.info("Save Location: #{temp_file}")
-    @@logger.info("Size: #{(File.size("./#{temp_file}").to_f / 1024 / 1024).round(4)} MB")
-    @@logger.info("Time to Download: #{(Time.now - start_time).round(3)} seconds")
+    @@forki_logger.info("Forki download finished")
+    @@forki_logger.info("Save Location: #{temp_file}")
+    @@forki_logger.info("Size: #{(File.size("./#{temp_file}").to_f / 1024 / 1024).round(4)} MB")
+    @@forki_logger.info("Time to Download: #{(Time.now - start_time).round(3)} seconds")
     temp_file
   end
 
@@ -77,9 +77,9 @@ module Forki
 
   def self.set_logger_level
     if ENV["RAILS_ENV"] == "test" || ENV["RAILS_ENV"] == "development"
-      @@logger.level = Logger::INFO
+      @@forki_logger.level = Logger::INFO
     else
-      @@logger.level = Logger::WARN
+      @@forki_logger.level = Logger::WARN
     end
   end
 end
