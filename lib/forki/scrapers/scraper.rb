@@ -75,10 +75,13 @@ module Forki
 
     # Logs in to Facebook (if not already logged in)
     def login
-      return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
+      page.quit
+
       visit("https://www.facebook.com")  # Visit the Facebook home page
+      return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
+
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
