@@ -13,7 +13,6 @@ options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--user-data-dir=/tmp/tarun")
 
-
 Capybara.register_driver :chrome do |app|
   client = Selenium::WebDriver::Remote::Http::Default.new
   client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
@@ -78,7 +77,6 @@ module Forki
     def login
       return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
-
 
       visit("https://www.facebook.com")  # Visit the Facebook home page
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])

@@ -148,41 +148,6 @@ module Forki
       post_details
     end
 
-
-
-
-
-
-    #       nodes = graphql_object_array.map { |graphql_object| graphql_object["nodes"] if graphql_object.has_key?("nodes") }.compact
-    # feedback = node["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
-
-    # # viewer_actor_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("viewer_actor") && graphql_object.keys.include?("display_comments") }
-    # curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("currMedia") }
-    # creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("creation_story") && graphql_object.keys.include?("message") }
-
-    # begin
-    #   poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
-    # rescue StandardError => e
-    #   debugger
-    # end
-
-
-    # reaction_counts = extract_reaction_counts(viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
-    # post_details = {
-    #   id: curr_media_object["currMedia"]["id"],
-    #   num_comments: feeback["comment_count"]["total_count"],
-    #   num_shares: feedback["share_count"]["count"],
-    #   reshare_warning: feedback["should_show_reshare_warning"]
-
-    #   image_url: curr_media_object["currMedia"]["image"]["uri"],
-    #   text: (creation_story_object["message"] || {}).fetch("text", nil),
-    #   profile_link: poster["url"],
-    #   created_at: curr_media_object["currMedia"]["created_time"],
-    #   has_video: false
-    # }
-
-
-
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
       viewer_actor_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("viewer_actor") && graphql_object.keys.include?("display_comments") }
@@ -277,6 +242,7 @@ module Forki
     def parse(url)
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
+      page.quit
       post_data = extract_post_data(graphql_strings)
 
       user_url = post_data[:profile_link]
