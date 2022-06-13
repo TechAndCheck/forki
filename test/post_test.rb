@@ -130,7 +130,7 @@ class PostTest < Minitest::Test
   end
 
   def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
-    urls = %w[https://www.facebook.com/watch/live/?v=960083361438600]
+    urls = %w[https://www.facebook.com/watch/live/?v=394367115960503]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
