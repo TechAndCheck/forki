@@ -92,27 +92,11 @@ module Forki
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
       Capybara.app_host = "https://www.facebook.com"
-
       facebook_url = "https://www.facebook.com"
       visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
       login
       raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
-
       visit url
-      retry_count = 0
-      while retry_count < 5
-        begin
-          raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
-          break
-        rescue Selenium::WebDriver::Error::StaleElementReferenceError
-          print({ error: "Error scraping spans", url: url, count: retry_count }.to_json)
-          retry_count += 1
-          raise Forki::RetryableError("Stale page element reference") if retry_count > 4
-          refresh
-          # Give it a second (well, five)
-          sleep(5)
-        end
-      end
     end
 
     # Extracts an integer out of a string describing a number
