@@ -17,6 +17,7 @@ module Forki
     def extract_post_data(graphql_strings)
       graphql_objects = get_graphql_objects(graphql_strings)
       post_has_video = check_if_post_is_video(graphql_objects)
+      post_has_image = check_if_post_is_image(graphql_objects)
 
       # There's a chance it may be embedded in a comment chain like this:
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
@@ -26,8 +27,10 @@ module Forki
         extract_video_post_data(graphql_strings)
       elsif post_has_video_in_comment_stream
         extract_video_comment_post_data(graphql_objects)
-      else
+      elsif post_has_image
         extract_image_post_data(graphql_objects)
+      else
+        raise ContentUnavailableError
       end
     end
 
@@ -37,6 +40,10 @@ module Forki
 
     def check_if_post_is_video(graphql_objects)
       graphql_objects.any? { |graphql_object| graphql_object.keys.include?("is_live_streaming") | graphql_object.keys.include?("video") }
+    end
+
+    def check_if_post_is_image(graphql_objects)
+      graphql_objects.any? { |graphql_object| graphql_object.keys.include?("image") | graphql_object.keys.include?("currMedia") }
     end
 
     def check_if_post_is_in_comment_stream(graphql_objects)
@@ -242,11 +249,11 @@ module Forki
     def parse(url)
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
-      page.quit
       post_data = extract_post_data(graphql_strings)
-
       user_url = post_data[:profile_link]
       post_data[:url] = url
+      page.quit # Close browser between page navigations to prevent cache folder access issues
+
       post_data[:user] = User.lookup(user_url).first
       post_data
     end
