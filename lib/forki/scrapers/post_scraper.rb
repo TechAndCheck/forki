@@ -18,6 +18,7 @@ module Forki
       graphql_objects = get_graphql_objects(graphql_strings)
       post_has_video = check_if_post_is_video(graphql_objects)
       post_has_image = check_if_post_is_image(graphql_objects)
+      post_is_unavailable = check_if_post_is_unavailable
 
       # There's a chance it may be embedded in a comment chain like this:
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
@@ -29,8 +30,10 @@ module Forki
         extract_video_comment_post_data(graphql_objects)
       elsif post_has_image
         extract_image_post_data(graphql_objects)
-      else
+      elsif post_is_unavailable
         raise ContentUnavailableError
+      else
+        raise UnhandledContentError
       end
     end
 
@@ -43,7 +46,10 @@ module Forki
     end
 
     def check_if_post_is_image(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.keys.include?("image") | graphql_object.keys.include?("currMedia") }
+      graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
+        true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
+        true unless graphql_object.fetch("currMedia", nil).nil?
+      end
     end
 
     def check_if_post_is_in_comment_stream(graphql_objects)
@@ -61,6 +67,15 @@ module Forki
       end
 
       false
+    end
+
+    def check_if_post_is_unavailable
+      begin
+        find("span", wait: 5, text: "content isn't available right now", exact_text: false)
+      rescue Capybara::ElementNotFound
+        false
+      end
+      true
     end
 
     def extract_video_comment_post_data(graphql_objects)

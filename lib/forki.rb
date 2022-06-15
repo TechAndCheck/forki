@@ -35,6 +35,12 @@ module Forki
     end
   end
 
+  class UnhandledContentError < StandardError
+    def initialize(msg = "Forki does not know how to handle the post")
+      super
+    end
+  end
+
   define_setting :temp_storage_location, "tmp/forki"
 
 
