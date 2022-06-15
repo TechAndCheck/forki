@@ -46,7 +46,10 @@ module Forki
     end
 
     def check_if_post_is_image(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.keys.include?("image") | graphql_object.keys.include?("currMedia") }
+      graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
+        true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
+        true unless graphql_object.fetch("currMedia", nil).nil?
+      end
     end
 
     def check_if_post_is_in_comment_stream(graphql_objects)
