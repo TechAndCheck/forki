@@ -71,7 +71,7 @@ module Forki
 
     def check_if_post_is_unavailable
       begin
-        find("span", wait:5, text:"content isn't available right now", exact_text:false)
+        find("span", wait: 5, text: "content isn't available right now", exact_text: false)
       rescue Capybara::ElementNotFound
         false
       end
