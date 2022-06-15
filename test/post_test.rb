@@ -154,7 +154,7 @@ class PostTest < Minitest::Test
   end
 
   def test_scraping_an_inaccessible_post_raises_a_content_not_available_exception
-    assert_raises "content unavailable" do
+    assert_raises Forki::ContentUnavailableError do
       Forki::Post.lookup("https://www.facebook.com/redwhitebluenews/videos/258470355199081/")
     end
   end
