@@ -1,5 +1,6 @@
 
 require "test_helper"
+require "byebug"
 
 class UserTest < Minitest::Test
   def teardown
@@ -50,6 +51,24 @@ class UserTest < Minitest::Test
       assert_not_nil user.name
 
       assert_nil user.number_of_followers
+      assert_nil user.number_of_likes
+      assert user.verified == false
+
+      assert_not_nil user.profile_image_url
+      assert_not_nil user.profile_image_file
+      assert_not_nil user.profile_link
+      assert_not_nil user.id
+      assert_not_nil user.profile
+    end
+  end
+
+  def test_a_second_user_profile_returns_properly_when_scraped
+    urls = %w[https://www.facebook.com/mark.w.messmore]
+    users = Forki::User.lookup(urls)
+    users.each do |user|
+      assert_not_nil user.name
+
+      assert user.number_of_followers&.positive?
       assert_nil user.number_of_likes
       assert user.verified == false
 

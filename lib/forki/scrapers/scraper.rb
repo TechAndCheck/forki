@@ -108,6 +108,7 @@ module Forki
       if element.class != String # if an html element was passed in
         element = element.text(:all)
       end
+
       num_pattern = /[0-9KM ,.]+/
       interaction_num_text = num_pattern.match(element)[0]
 
@@ -118,7 +119,8 @@ module Forki
       elsif interaction_num_text.include?("M") # e.g. "13M"
         interaction_num_text.to_i * 1_000_000
       else  # e.g. "15,443"
-        interaction_num_text.delete([",", " "]).to_i
+        interaction_num_text.delete!(",")
+        interaction_num_text.delete(" ").to_i
       end
     end
   end
