@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
   spec.add_dependency "capybara" # For scraping and running browsers
+  spec.add_dependency "capybara-screenshot" # For taking screenshots
   spec.add_dependency "apparition" # A Chrome driver for Capybara
   spec.add_dependency "typhoeus" # For making API requests
   spec.add_dependency "oj" # A faster JSON parser/loader than stdlib
