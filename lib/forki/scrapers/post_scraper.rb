@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "typhoeus"
-require "capybara-screenshot"
+require "securerandom"
 
 module Forki
   # rubocop:disable Metrics/ClassLength
@@ -149,11 +149,6 @@ module Forki
       post_details
     end
 
-  def take_screenshot
-    # byebug
-    File.open(screenshot_and_save_page[:image])
-  end
-
     #       nodes = graphql_object_array.map { |graphql_object| graphql_object["nodes"] if graphql_object.has_key?("nodes") }.compact
     # feedback = node["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
 
@@ -283,7 +278,7 @@ module Forki
       user_url = post_data[:profile_link]
       post_data[:url] = url
       post_data[:user] = User.lookup(user_url).first
-      take_screenshot
+      post_data[:screenshot_file] = save_screenshot("/tmp/#{SecureRandom.uuid}.png")
       post_data
     end
   end
