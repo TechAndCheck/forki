@@ -22,6 +22,8 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.video_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -42,8 +44,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -64,6 +67,7 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.image_file
+      assert_not_nil post.screenshot_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -80,8 +84,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -101,8 +106,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -121,8 +127,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -139,8 +146,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
+      assert_not_nil post.screenshot_file
       assert_not_nil post.video_preview_image_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at

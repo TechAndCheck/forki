@@ -21,7 +21,8 @@ module Forki
                 :user,
                 :video_file,
                 :video_preview_image_file,
-                :video_preview_image_url
+                :video_preview_image_url,
+                :screenshot_file
 
   private
 
@@ -43,6 +44,7 @@ module Forki
       @video_file = hash[:video_file]
       @video_preview_image_file = hash[:video_preview_image_file]
       @video_preview_image_url = hash[:video_preview_image_url]
+      @screenshot_file = hash[:screenshot_file]
     end
 
     class << self
