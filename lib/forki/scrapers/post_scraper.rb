@@ -18,6 +18,8 @@ module Forki
     def extract_post_data(graphql_strings)
       graphql_objects = get_graphql_objects(graphql_strings)
       post_has_video = check_if_post_is_video(graphql_objects)
+      post_has_image = check_if_post_is_image(graphql_objects)
+      post_is_unavailable = check_if_post_is_unavailable
 
       # There's a chance it may be embedded in a comment chain like this:
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
@@ -27,8 +29,12 @@ module Forki
         extract_video_post_data(graphql_strings)
       elsif post_has_video_in_comment_stream
         extract_video_comment_post_data(graphql_objects)
-      else
+      elsif post_has_image
         extract_image_post_data(graphql_objects)
+      elsif post_is_unavailable
+        raise ContentUnavailableError
+      else
+        raise UnhandledContentError
       end
     end
 
@@ -38,6 +44,13 @@ module Forki
 
     def check_if_post_is_video(graphql_objects)
       graphql_objects.any? { |graphql_object| graphql_object.keys.include?("is_live_streaming") | graphql_object.keys.include?("video") }
+    end
+
+    def check_if_post_is_image(graphql_objects)
+      graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
+        true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
+        true unless graphql_object.fetch("currMedia", nil).nil?
+      end
     end
 
     def check_if_post_is_in_comment_stream(graphql_objects)
@@ -55,6 +68,16 @@ module Forki
       end
 
       false
+    end
+
+    def check_if_post_is_unavailable
+      begin
+        find("span", wait: 5, text: "content isn't available right now", exact_text: false)
+      rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
+        false
+      end
+
+      true
     end
 
     def extract_video_comment_post_data(graphql_objects)
@@ -148,36 +171,6 @@ module Forki
       post_details[:reactions] = reaction_counts
       post_details
     end
-
-    #       nodes = graphql_object_array.map { |graphql_object| graphql_object["nodes"] if graphql_object.has_key?("nodes") }.compact
-    # feedback = node["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
-
-    # # viewer_actor_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("viewer_actor") && graphql_object.keys.include?("display_comments") }
-    # curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("currMedia") }
-    # creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("creation_story") && graphql_object.keys.include?("message") }
-
-    # begin
-    #   poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
-    # rescue StandardError => e
-    #   debugger
-    # end
-
-
-    # reaction_counts = extract_reaction_counts(viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
-    # post_details = {
-    #   id: curr_media_object["currMedia"]["id"],
-    #   num_comments: feeback["comment_count"]["total_count"],
-    #   num_shares: feedback["share_count"]["count"],
-    #   reshare_warning: feedback["should_show_reshare_warning"]
-
-    #   image_url: curr_media_object["currMedia"]["image"]["uri"],
-    #   text: (creation_story_object["message"] || {}).fetch("text", nil),
-    #   profile_link: poster["url"],
-    #   created_at: curr_media_object["currMedia"]["created_time"],
-    #   has_video: false
-    # }
-
-
 
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
@@ -274,9 +267,11 @@ module Forki
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
       post_data = extract_post_data(graphql_strings)
-
-      user_url = post_data[:profile_link]
+      post_data[:screenshot_file] = save_screenshot("/tmp/#{SecureRandom.uuid}.png")
       post_data[:url] = url
+      user_url = post_data[:profile_link]
+      page.quit # Close browser between page navigations to prevent cache folder access issues
+
       post_data[:user] = User.lookup(user_url).first
       post_data[:screenshot_file] = save_screenshot("/tmp/#{SecureRandom.uuid}.png")
       post_data

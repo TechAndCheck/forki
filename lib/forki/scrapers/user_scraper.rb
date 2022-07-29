@@ -18,6 +18,13 @@ module Forki
       extract_int_from_num_element(number_of_followers_match.named_captures["num_followers"])
     end
 
+    def find_number_followers_for_normal_profile(profile_followers_node)
+      followers_string = profile_followers_node["node"]["timeline_context_item"]["renderer"]["context_item"]["title"]["text"]
+      followers_pattern = /[0-9,]+/
+      number_of_followers_match = followers_pattern.match(followers_string).to_s
+      extract_int_from_num_element(number_of_followers_match)
+    end
+
     # Returns a hash of details about a Facebook user profile
     def extract_profile_details(graphql_strings)
       profile_header_str = graphql_strings.find { |gql| gql.include? "profile_header_renderer" }
@@ -25,9 +32,27 @@ module Forki
       profile_header_obj = JSON.parse(profile_header_str)["user"]["profile_header_renderer"]
       profile_intro_obj = profile_intro_str ? JSON.parse(profile_intro_str) : nil
 
+      number_of_followers = find_number_of_followers(profile_header_str)
+
+      # Check if the user shows followers count
+      if number_of_followers.nil?
+        profile_title_section = graphql_strings.find { |gql| gql.include? "profile_tile_section_type" }
+
+        json = JSON.parse(profile_title_section)
+        followers_node = json["user"]["profile_tile_sections"]["edges"].first["node"]["profile_tile_views"]["nodes"][1]["view_style_renderer"]["view"]["profile_tile_items"]["nodes"].select do |node|
+          node["node"]["timeline_context_item"]["timeline_context_list_item_type"] == "INTRO_CARD_FOLLOWERS"
+        end
+        if followers_node.empty?
+          number_of_followers = nil
+        else
+          number_of_followers = find_number_followers_for_normal_profile(followers_node.first)
+        end
+      end
+
+
       {
         id: profile_header_obj["user"]["id"],
-        number_of_followers: find_number_of_followers(profile_header_str),
+        number_of_followers: number_of_followers,
         name: profile_header_obj["user"]["name"],
         verified: profile_header_obj["user"]["is_verified"],
         profile: profile_intro_obj ? profile_intro_obj["profile_intro_card"]["bio"]["text"] : "",
@@ -60,6 +85,8 @@ module Forki
       graphql_strings = find_graphql_data_strings(page.html)
       is_page = graphql_strings.map { |s| JSON.parse(s) }.any? { |o| o.keys.include?("page") }
       user_details = is_page ? extract_page_details(graphql_strings) : extract_profile_details(graphql_strings)
+
+      page.quit
 
       user_details[:profile_image_file] = Forki.retrieve_media(user_details[:profile_image_url])
       user_details[:profile_link] = url

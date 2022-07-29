@@ -13,10 +13,9 @@ options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--user-data-dir=/tmp/tarun")
 
-
 Capybara.register_driver :chrome do |app|
   client = Selenium::WebDriver::Remote::Http::Default.new
-  client.read_timeout = 10  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
+  client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
   Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
 end
 
@@ -76,11 +75,13 @@ module Forki
 
     # Logs in to Facebook (if not already logged in)
     def login
-      return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
+      page.quit
 
       visit("https://www.facebook.com")  # Visit the Facebook home page
+      return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
+
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
@@ -91,27 +92,11 @@ module Forki
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
       Capybara.app_host = "https://www.facebook.com"
-
       facebook_url = "https://www.facebook.com"
       visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
       login
       raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
-
       visit url
-      retry_count = 0
-      while retry_count < 5
-        begin
-          raise Forki::ContentUnavailableError if all("span").any? { |span| span.text == "This Content Isn't Available Right Now" }
-          break
-        rescue Selenium::WebDriver::Error::StaleElementReferenceError
-          print({ error: "Error scraping spans", url: url, count: retry_count }.to_json)
-          retry_count += 1
-          raise Forki::RetryableError("Stale page element reference") if retry_count > 4
-          refresh
-          # Give it a second (well, five)
-          sleep(5)
-        end
-      end
     end
 
     # Extracts an integer out of a string describing a number
@@ -123,6 +108,7 @@ module Forki
       if element.class != String # if an html element was passed in
         element = element.text(:all)
       end
+
       num_pattern = /[0-9KM ,.]+/
       interaction_num_text = num_pattern.match(element)[0]
 
@@ -133,7 +119,8 @@ module Forki
       elsif interaction_num_text.include?("M") # e.g. "13M"
         interaction_num_text.to_i * 1_000_000
       else  # e.g. "15,443"
-        interaction_num_text.delete([",", " "]).to_i
+        interaction_num_text.delete!(",")
+        interaction_num_text.delete(" ").to_i
       end
     end
   end

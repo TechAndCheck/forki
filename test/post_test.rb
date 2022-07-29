@@ -22,6 +22,8 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.video_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -42,8 +44,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -64,6 +67,7 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.image_file
+      assert_not_nil post.screenshot_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -80,8 +84,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -101,8 +106,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -121,8 +127,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
       assert_not_nil post.video_preview_image_file
+      assert_not_nil post.screenshot_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -130,7 +137,7 @@ class PostTest < Minitest::Test
   end
 
   def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
-    urls = %w[https://www.facebook.com/watch/live/?v=960083361438600]
+    urls = %w[https://www.facebook.com/watch/live/?v=394367115960503]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
@@ -139,8 +146,9 @@ class PostTest < Minitest::Test
       assert post.reactions.length.positive?
 
       assert_not_nil post.video_file
-      assert_nil post.image_file
+      assert_not_nil post.screenshot_file
       assert_not_nil post.video_preview_image_file
+      assert_nil post.image_file
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -154,7 +162,7 @@ class PostTest < Minitest::Test
   end
 
   def test_scraping_an_inaccessible_post_raises_a_content_not_available_exception
-    assert_raises "content unavailable" do
+    assert_raises Forki::ContentUnavailableError do
       Forki::Post.lookup("https://www.facebook.com/redwhitebluenews/videos/258470355199081/")
     end
   end
