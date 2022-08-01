@@ -21,28 +21,30 @@ module Forki
                 :user,
                 :video_file,
                 :video_preview_image_file,
-                :video_preview_image_url
+                :video_preview_image_url,
+                :screenshot_file
 
   private
 
-    def initialize(hash = {})
+    def initialize(post_hash = {})
       # I need to figure out what's up with Facebook ids. Media have unique IDs, but their position in the URL is variable
-      # @id = hash[:id]
-      @image_file = hash[:image_file]
-      @image_url = hash[:image_url]
-      @has_video = hash[:has_video]
-      @url = hash[:url]
-      @id = hash[:id]
-      @num_comments = hash[:num_comments]
-      @num_shares = hash[:num_shares]
-      @num_views = hash[:num_views]
-      @reactions = hash[:reactions]
-      @text = hash[:text]
-      @created_at = hash[:created_at]
-      @user = hash[:user]
-      @video_file = hash[:video_file]
-      @video_preview_image_file = hash[:video_preview_image_file]
-      @video_preview_image_url = hash[:video_preview_image_url]
+      # @id = post_hash[:id]
+      @image_file = post_hash[:image_file]
+      @image_url = post_hash[:image_url]
+      @has_video = post_hash[:has_video]
+      @url = post_hash[:url]
+      @id = post_hash[:id]
+      @num_comments = post_hash[:num_comments]
+      @num_shares = post_hash[:num_shares]
+      @num_views = post_hash[:num_views]
+      @reactions = post_hash[:reactions]
+      @text = post_hash[:text]
+      @created_at = post_hash[:created_at]
+      @user = post_hash[:user]
+      @video_file = post_hash[:video_file]
+      @video_preview_image_file = post_hash[:video_preview_image_file]
+      @video_preview_image_url = post_hash[:video_preview_image_url]
+      @screenshot_file = post_hash[:screenshot_file]
     end
 
     class << self

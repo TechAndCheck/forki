@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "typhoeus"
+require "securerandom"
 
 module Forki
   # rubocop:disable Metrics/ClassLength
@@ -266,11 +267,13 @@ module Forki
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
       post_data = extract_post_data(graphql_strings)
-      user_url = post_data[:profile_link]
+      post_data[:screenshot_file] = save_screenshot("/tmp/#{SecureRandom.uuid}.png")
       post_data[:url] = url
+      user_url = post_data[:profile_link]
       page.quit # Close browser between page navigations to prevent cache folder access issues
 
       post_data[:user] = User.lookup(user_url).first
+      post_data[:screenshot_file] = save_screenshot("/tmp/#{SecureRandom.uuid}.png")
       post_data
     end
   end

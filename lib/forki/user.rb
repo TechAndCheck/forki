@@ -19,16 +19,16 @@ module Forki
 
     private
 
-      def initialize(hash = {})
-        @name = hash[:name]
-        @id = hash[:id]
-        @number_of_followers = hash[:number_of_followers]
-        @verified = hash[:verified]
-        @profile = hash[:profile]
-        @profile_link = hash[:profile_link]
-        @profile_image_file = hash[:profile_image_file]
-        @profile_image_url = hash[:profile_image_url]
-        @number_of_likes = hash[:number_of_likes]
+      def initialize(user_hash = {})
+        @name = user_hash[:name]
+        @id = user_hash[:id]
+        @number_of_followers = user_hash[:number_of_followers]
+        @verified = user_hash[:verified]
+        @profile = user_hash[:profile]
+        @profile_link = user_hash[:profile_link]
+        @profile_image_file = user_hash[:profile_image_file]
+        @profile_image_url = user_hash[:profile_image_url]
+        @number_of_likes = user_hash[:number_of_likes]
       end
 
       class << self
