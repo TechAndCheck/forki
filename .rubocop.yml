@@ -12,7 +12,7 @@ AllCops:
     - 'redis-stable/**/*'
     - 'bin/**/*'
     - 'vendor/**/*'
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.1
 
 # Rails generates this file
 Style/BlockComments:
