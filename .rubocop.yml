@@ -19,6 +19,10 @@ Style/BlockComments:
   Exclude:
     - 'db/seeds.rb'
 
+# Require hash values to be explicitly set
+Style/HashSyntax:
+  Enabled: false
+
 # This sets us to use the standard Rails format instead of Rubocop's
 # opinionated Ruby style.
 Style/FrozenStringLiteralComment:
