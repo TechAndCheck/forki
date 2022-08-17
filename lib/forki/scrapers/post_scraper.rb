@@ -270,7 +270,7 @@ module Forki
       post_data = extract_post_data(graphql_strings)
       post_data[:url] = url
       user_url = post_data[:profile_link]
-      post_data[:screenshot_file] = save_screenshot("/tmp/#{SecureRandom.uuid}.png")
+      post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
 
       page.quit # Close browser between page navigations to prevent cache folder access issues
 
