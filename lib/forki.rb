@@ -53,16 +53,17 @@ module Forki
     response = Typhoeus.get(url)
 
     # Get the file extension if it's in the file
-    extension = url.split(".").last
+    stripped_url = url.split("?").first  # remove URL query params
+    extension = stripped_url.split(".").last
 
     # Do some basic checks so we just empty out if there's something weird in the file extension
     # that could do some harm.
     if extension.length.positive?
-      extension = nil unless /^[a-zA-Z0-9]+$/.match?(extension)
+      extension = nil unless /^[a-zA-Z0-9]{3}$/.match?(extension)  # extension must be a 3-character alphanumeric string
       extension = ".#{extension}" unless extension.nil?
     end
 
-    temp_file = "#{Forki.temp_storage_location}/#{SecureRandom.uuid}#{extension}"
+    temp_file = "#{Forki.temp_storage_location}/facebook_media_#{SecureRandom.uuid}#{extension}"
 
     # We do this in case the folder isn't created yet, since it's a temp folder we'll just do so
     create_temp_storage_location
