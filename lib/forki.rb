@@ -43,6 +43,16 @@ module Forki
 
   define_setting :temp_storage_location, "tmp/forki"
 
+  # Extract the file extension from a media URL
+  # E.g. ".png" from https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-1.png?stp=dst-png_p148x148
+  def self.extract_file_extension_from_url(url)
+    stripped_url = url.split("?").first  # remove URL query params
+    extension = stripped_url.split(".").last
+
+    extension = nil unless /^[a-zA-Z0-9]{3}$/.match?(extension)  # extension must be a 3-character alphanumeric string
+    extension = ".#{extension}" unless extension.nil?
+    extension
+  end
 
   # Get an image from a URL and save to a temp folder set in the configuration under
   # temp_storage_location
@@ -52,17 +62,7 @@ module Forki
 
     response = Typhoeus.get(url)
 
-    # Get the file extension if it's in the file
-    stripped_url = url.split("?").first  # remove URL query params
-    extension = stripped_url.split(".").last
-
-    # Do some basic checks so we just empty out if there's something weird in the file extension
-    # that could do some harm.
-    if extension.length.positive?
-      extension = nil unless /^[a-zA-Z0-9]{3}$/.match?(extension)  # extension must be a 3-character alphanumeric string
-      extension = ".#{extension}" unless extension.nil?
-    end
-
+    extension = Forki.extract_file_extension_from_url(url)
     temp_file = "#{Forki.temp_storage_location}/facebook_media_#{SecureRandom.uuid}#{extension}"
 
     # We do this in case the folder isn't created yet, since it's a temp folder we'll just do so
