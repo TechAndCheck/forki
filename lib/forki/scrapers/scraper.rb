@@ -7,17 +7,18 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 
-# options = Selenium::WebDriver::Chrome::Options.new
-# options.add_argument("--window-size=1400,1400")
-# options.add_argument("--no-sandbox")
-# options.add_argument("--disable-dev-shm-usage")
+options = Selenium::WebDriver::Chrome::Options.new
+options.add_argument("--window-size=1500,1500")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 # options.add_argument("--user-data-dir=/tmp/tarun")
 
-# Capybara.register_driver :chrome do |app|
-#   client = Selenium::WebDriver::Remote::Http::Default.new
-#   client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
-#   Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
-# end
+Capybara.register_driver :selenium_forki do |app|
+  client = Selenium::WebDriver::Remote::Http::Default.new
+  client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
+  Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
+end
 
 Capybara.default_max_wait_time = 60
 Capybara.threadsafe = true
@@ -28,9 +29,9 @@ module Forki
     include Capybara::DSL
 
     def initialize
-      Capybara.default_driver = :selenium
+      Capybara.default_driver = :selenium_forki
       Forki.set_logger_level
-      reset_selenium
+      # reset_selenium
     end
 
     # Yeah, just use the tmp/ directory that's created during setup
@@ -82,16 +83,16 @@ module Forki
       options.add_argument("--window-size=1500,1500")
       options.add_argument("--no-sandbox")
       options.add_argument("--disable-dev-shm-usage")
-      options.add_argument("--user-data-dir=/tmp/tarun_#{SecureRandom.uuid}")
+      options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
       # options.add_argument("--user-data-dir=/tmp/tarun")
 
-      Capybara.register_driver :selenium do |app|
+      Capybara.register_driver :selenium_forki do |app|
         client = Selenium::WebDriver::Remote::Http::Default.new
         client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
         Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
       end
 
-      Capybara.current_driver = :selenium
+      Capybara.current_driver = :selenium_forki
     end
 
     # Logs in to Facebook (if not already logged in)
@@ -106,7 +107,8 @@ module Forki
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
-      sleep 3
+
+      raise Forki::BlockedCredentialsError if find_by_id("error_box", wait: 3).present?
     end
 
     # Ensures that a valid Facebook url has been provided, and that it points to an available post
