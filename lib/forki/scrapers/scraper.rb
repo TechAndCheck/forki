@@ -28,15 +28,15 @@ module Forki
     include Capybara::DSL
 
     def initialize
-      Capybara.default_driver = :chrome
+      Capybara.default_driver = :selenium
       Forki.set_logger_level
+      reset_selenium
     end
 
     # Yeah, just use the tmp/ directory that's created during setup
     def download_image(img_elem)
       img_data = URI.open(img_elem["src"]).read
       File.binwrite("temp/emoji.png", img_data)
-      reset_selenium
     end
 
     # Returns all GraphQL data objects embedded within a string
