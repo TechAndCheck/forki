@@ -108,7 +108,9 @@ module Forki
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
 
-      raise Forki::BlockedCredentialsError if find_by_id("error_box", wait: 3).present?
+      begin
+        raise Forki::BlockedCredentialsError if find_by_id("error_box", wait: 3)
+      rescue Capybara::ElementNotFound; end
     end
 
     # Ensures that a valid Facebook url has been provided, and that it points to an available post
