@@ -166,4 +166,10 @@ class PostTest < Minitest::Test
       Forki::Post.lookup("https://www.facebook.com/redwhitebluenews/videos/258470355199081/")
     end
   end
+
+  def test_scraping_a_taken_down_post_raises_a_content_not_available_exception
+    assert_raises Forki::ContentUnavailableError do
+      Forki::Post.lookup("https://www.facebook.com/photo.php?fbid=10163749206915113&set=a.329268060112&type=3&theater/")
+    end
+  end
 end
