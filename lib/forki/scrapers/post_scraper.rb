@@ -18,7 +18,7 @@ module Forki
 
     def extract_post_data(graphql_strings)
       # Bail out of the post otherwise it gets stuck
-      raise ContentUnavailableError if check_if_post_is_unavailable
+      raise ContentUnavailableError unless is_post_available?
 
       graphql_objects = get_graphql_objects(graphql_strings)
       post_has_video = check_if_post_is_video(graphql_objects)
@@ -71,14 +71,14 @@ module Forki
       false
     end
 
-    def check_if_post_is_unavailable
+    def is_post_available?
       begin
-        find("span", wait: 5, text: "content isn't available right now", exact_text: false)
+        find("span", wait: 5, text: "content isn't available", exact_text: false)
       rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
-        false
+        return true
       end
 
-      true
+      false
     end
 
     def extract_video_comment_post_data(graphql_objects)
@@ -275,7 +275,15 @@ module Forki
       post_data = extract_post_data(graphql_strings)
       post_data[:url] = url
       user_url = post_data[:profile_link]
-      post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+
+      5.times do
+        begin
+          post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+          break
+        rescue Net::ReadTimeout; end
+
+        sleep(5)
+      end
 
       page.quit # Close browser between page navigations to prevent cache folder access issues
 
@@ -283,6 +291,10 @@ module Forki
       page.quit
 
       post_data
+    rescue StandardError => e
+      raise e
+    ensure
+      page.quit
     end
   end
 end
