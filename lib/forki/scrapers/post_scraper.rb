@@ -128,11 +128,29 @@ module Forki
 
       return extract_video_post_data_alternative(graphql_object_array) if story_node_object.nil?
 
-      video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
+      if story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("media")
+        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
+        creation_date = video_object["publish_time"]
+        # creation_date = video_object["video"]["publish_time"]
+      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("style_infos")
+        # For "Reels" we need a separate way to parse this
+        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["short_form_video_context"]["playback_video"]
+        creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["creation_time"]
+      else
+        raise "Unable to parse video object"
+      end
+
       feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
       reaction_counts = extract_reaction_counts(feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       share_count_object = feedback_object.fetch("share_count", {})
 
+      if story_node_object["comet_sections"]["content"]["story"]["comet_sections"].key? "message"
+        text = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"]
+      else
+        text = ""
+      end
+
+      # debugger
       post_details = {
         id: video_object["id"],
         num_comments: feedback_object["comment_count"]["total_count"],
@@ -141,8 +159,8 @@ module Forki
         reshare_warning: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"],
         video_preview_image_url: video_object["preferred_thumbnail"]["image"]["uri"],
         video_url: video_object["playable_url_quality_hd"] || video_object["playable_url"],
-        text: story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"],
-        created_at: video_object["publish_time"],
+        text: text,
+        created_at: creation_date,
         profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true
       }
