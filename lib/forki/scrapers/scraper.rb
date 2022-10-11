@@ -12,7 +12,6 @@ options.add_argument("--window-size=1500,1500")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
-# options.add_argument("--user-data-dir=/tmp/tarun")
 
 Capybara.register_driver :selenium_forki do |app|
   client = Selenium::WebDriver::Remote::Http::Default.new
@@ -84,7 +83,6 @@ module Forki
       options.add_argument("--no-sandbox")
       options.add_argument("--disable-dev-shm-usage")
       options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
-      # options.add_argument("--user-data-dir=/tmp/tarun")
 
       Capybara.register_driver :selenium_forki do |app|
         client = Selenium::WebDriver::Remote::Http::Default.new
