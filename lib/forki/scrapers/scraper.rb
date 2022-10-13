@@ -94,13 +94,21 @@ module Forki
     end
 
     # Logs in to Facebook (if not already logged in)
-    def login
+    def login(url = nil)
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
-      page.quit
+      url ||= "https://www.facebook.com"
+      visit(url)  # Visit the url passed in or the facebook homepage if nothing is
 
-      visit("https://www.facebook.com")  # Visit the Facebook home page
-      return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
+      # Look for the "Password" field, which throws an error if not found. So we catch it and run the rest of the tests
+      begin
+        find_by_id("login_form", wait: 5)
+      rescue Capybara::ElementNotFound
+        return unless page.title.downcase.include?("facebook - log in")
+      end
+
+      # Since we're not logged in, let's do that quick
+      visit("https://www.facebook.com")
 
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
@@ -116,10 +124,10 @@ module Forki
     def validate_and_load_page(url)
       Capybara.app_host = "https://www.facebook.com"
       facebook_url = "https://www.facebook.com"
-      visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
-      login
+      # visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
+      login(url)
       raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
-      visit url
+      visit url unless current_url.start_with?(url)
     end
 
     # Extracts an integer out of a string describing a number

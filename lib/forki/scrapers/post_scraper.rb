@@ -45,10 +45,11 @@ module Forki
     end
 
     def check_if_post_is_video(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.key?("is_live_streaming") | graphql_object.key?("video") | check_if_post_is_reel(graphql_object) }
+      graphql_objects.any? { |graphql_object| graphql_object.key?("is_live_streaming") || graphql_object.key?("video") || check_if_post_is_reel(graphql_object) }
     end
 
     def check_if_post_is_reel(graphql_object)
+      # debugger
       return false unless graphql_object.key?("node")
 
       begin
@@ -318,7 +319,7 @@ module Forki
         sleep(5)
       end
 
-      page.quit # Close browser between page navigations to prevent cache folder access issues
+      # page.quit # Close browser between page navigations to prevent cache folder access issues
 
       post_data[:user] = User.lookup(user_url).first
       page.quit
