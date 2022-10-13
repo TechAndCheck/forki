@@ -2,6 +2,7 @@
 
 require "typhoeus"
 require "securerandom"
+require "byebug"
 
 module Forki
   # rubocop:disable Metrics/ClassLength
@@ -44,8 +45,22 @@ module Forki
     end
 
     def check_if_post_is_video(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.key?("is_live_streaming") | graphql_object.key?("video") }
+      graphql_objects.any? { |graphql_object| graphql_object.key?("is_live_streaming") | graphql_object.key?("video") | check_if_post_is_reel(graphql_object) }
     end
+
+    def check_if_post_is_reel(graphql_object)
+      return false unless graphql_object.key?("node")
+
+      begin
+        style_infos = graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first
+      rescue NoMethodError # if the object doesn't match the attribute chain above, the line above will try to operate on nil
+        return false
+      end
+
+      style_infos.include?("fb_shorts_story")
+    end
+
+
 
     def check_if_post_is_image(graphql_objects)
       graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
