@@ -35,6 +35,12 @@ module Forki
     end
   end
 
+  class BlockedCredentialsError < StandardError
+    def initalize(msg = "Credentials are most likely being blocked")
+      super
+    end
+  end
+
   class UnhandledContentError < StandardError
     def initialize(msg = "Forki does not know how to handle the post")
       super

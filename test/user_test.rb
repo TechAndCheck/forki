@@ -79,4 +79,22 @@ class UserTest < Minitest::Test
       assert_not_nil user.profile
     end
   end
+
+  def test_another_user_profile
+    urls = %[https://www.facebook.com/MIL-Show-104976974904695/]
+    users = Forki::User.lookup(urls)
+    users.each do |user|
+      assert_not_nil user.name
+
+      assert user.number_of_followers&.positive?
+      assert_nil user.number_of_likes
+      assert user.verified == false
+
+      assert_not_nil user.profile_image_url
+      assert_not_nil user.profile_image_file
+      assert_not_nil user.profile_link
+      assert_not_nil user.id
+      assert_not_nil user.profile
+    end
+  end
 end

@@ -83,7 +83,7 @@ module Forki
     def parse(url)
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
-      is_page = graphql_strings.map { |s| JSON.parse(s) }.any? { |o| o.keys.include?("page") }
+      is_page = graphql_strings.map { |s| JSON.parse(s) }.any? { |o| o.key?("page") }
       user_details = is_page ? extract_page_details(graphql_strings) : extract_profile_details(graphql_strings)
 
       user_details[:profile_image_file] = Forki.retrieve_media(user_details[:profile_image_url])

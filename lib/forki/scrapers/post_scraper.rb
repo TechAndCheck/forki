@@ -2,6 +2,7 @@
 
 require "typhoeus"
 require "securerandom"
+require "byebug"
 
 module Forki
   # rubocop:disable Metrics/ClassLength
@@ -17,10 +18,12 @@ module Forki
     end
 
     def extract_post_data(graphql_strings)
+      # Bail out of the post otherwise it gets stuck
+      raise ContentUnavailableError unless is_post_available?
+
       graphql_objects = get_graphql_objects(graphql_strings)
       post_has_video = check_if_post_is_video(graphql_objects)
       post_has_image = check_if_post_is_image(graphql_objects)
-      post_is_unavailable = check_if_post_is_unavailable
 
       # There's a chance it may be embedded in a comment chain like this:
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
@@ -32,8 +35,6 @@ module Forki
         extract_video_comment_post_data(graphql_objects)
       elsif post_has_image
         extract_image_post_data(graphql_objects)
-      elsif post_is_unavailable
-        raise ContentUnavailableError
       else
         raise UnhandledContentError
       end
@@ -44,8 +45,23 @@ module Forki
     end
 
     def check_if_post_is_video(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.keys.include?("is_live_streaming") | graphql_object.keys.include?("video") }
+      graphql_objects.any? { |graphql_object| graphql_object.key?("is_live_streaming") || graphql_object.key?("video") || check_if_post_is_reel(graphql_object) }
     end
+
+    def check_if_post_is_reel(graphql_object)
+      # debugger
+      return false unless graphql_object.key?("node")
+
+      begin
+        style_infos = graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first
+      rescue NoMethodError # if the object doesn't match the attribute chain above, the line above will try to operate on nil
+        return false
+      end
+
+      style_infos.include?("fb_shorts_story")
+    end
+
+
 
     def check_if_post_is_image(graphql_objects)
       graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
@@ -56,7 +72,7 @@ module Forki
 
     def check_if_post_is_in_comment_stream(graphql_objects)
       graphql_objects.find do |graphql_object|
-        next unless graphql_object.keys.include?("nodes")
+        next unless graphql_object.key?("nodes")
 
         begin
           type = graphql_object["nodes"].first["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]["__typename"]
@@ -71,20 +87,20 @@ module Forki
       false
     end
 
-    def check_if_post_is_unavailable
+    def is_post_available?
       begin
-        find("span", wait: 5, text: "content isn't available right now", exact_text: false)
+        find("span", wait: 5, text: "content isn't available", exact_text: false)
       rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
-        false
+        return true
       end
 
-      true
+      false
     end
 
     def extract_video_comment_post_data(graphql_objects)
       graphql_nodes = nil
       graphql_objects.find do |graphql_object|
-        next unless graphql_object.keys.include?("nodes")
+        next unless graphql_object.key?("nodes")
 
         graphql_nodes = graphql_object["nodes"]
         break
@@ -121,14 +137,36 @@ module Forki
       unless all("h1").find { |h1| h1.text.strip == "Watch" }.nil?
         return extract_video_post_data_from_watch_page(graphql_strings)  # If this is a "watch page" video
       end
+
       graphql_object_array = graphql_strings.map { |graphql_string| JSON.parse(graphql_string) }
-      story_node_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include? "node" }&.fetch("node", nil) # user posted video
-      story_node_object = story_node_object || graphql_object_array.find { |graphql_object| graphql_object.keys.include? "nodes" }&.fetch("nodes")&.first # page posted video
+      story_node_object = graphql_object_array.find { |graphql_object| graphql_object.key? "node" }&.fetch("node", nil) # user posted video
+      story_node_object = story_node_object || graphql_object_array.find { |graphql_object| graphql_object.key? "nodes" }&.fetch("nodes")&.first # page posted video
+
       return extract_video_post_data_alternative(graphql_object_array) if story_node_object.nil?
-      video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
+
+      if story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("media")
+        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
+        creation_date = video_object["publish_time"]
+        # creation_date = video_object["video"]["publish_time"]
+      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("style_infos")
+        # For "Reels" we need a separate way to parse this
+        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["short_form_video_context"]["playback_video"]
+        creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["creation_time"]
+      else
+        raise "Unable to parse video object"
+      end
+
       feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
       reaction_counts = extract_reaction_counts(feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       share_count_object = feedback_object.fetch("share_count", {})
+
+      if story_node_object["comet_sections"]["content"]["story"]["comet_sections"].key? "message"
+        text = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"]
+      else
+        text = ""
+      end
+
+      # debugger
       post_details = {
         id: video_object["id"],
         num_comments: feedback_object["comment_count"]["total_count"],
@@ -137,8 +175,8 @@ module Forki
         reshare_warning: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"],
         video_preview_image_url: video_object["preferred_thumbnail"]["image"]["uri"],
         video_url: video_object["playable_url_quality_hd"] || video_object["playable_url"],
-        text: story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"],
-        created_at: video_object["publish_time"],
+        text: text,
+        created_at: creation_date,
         profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true
       }
@@ -149,11 +187,12 @@ module Forki
     end
 
     def extract_video_post_data_alternative(graphql_object_array)
-      sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("tahoe_sidepane_renderer") }
+      sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.key?("tahoe_sidepane_renderer") }
       video_object = graphql_object_array.find { |graphql_object| graphql_object.keys == ["video"] }
       feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
       reaction_counts = extract_reaction_counts(sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       share_count_object = feedback_object.fetch("share_count", {})
+
       post_details = {
         id: video_object["id"],
         num_comments: feedback_object["comments_count_summary_renderer"]["feedback"]["comment_count"]["total_count"],
@@ -175,9 +214,9 @@ module Forki
 
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
-      viewer_actor_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("viewer_actor") && graphql_object.keys.include?("display_comments") }
-      curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("currMedia") }
-      creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.keys.include?("creation_story") && graphql_object.keys.include?("message") }
+      viewer_actor_object = graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
+      curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.key?("currMedia") }
+      creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.key?("creation_story") && graphql_object.key?("message") }
 
       poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
 
@@ -201,7 +240,7 @@ module Forki
     # Extract data from a non-live video post on the watch page
     def extract_video_post_data_from_watch_page(graphql_strings)
       return extract_live_video_post_data_from_watch_page(graphql_strings) if current_url.include?("live")
-      video_object = graphql_strings.map { |g| JSON.parse(g) }.find { |x| x.keys.include?("video") }
+      video_object = graphql_strings.map { |g| JSON.parse(g) }.find { |x| x.key?("video") }
       creation_story_object = JSON.parse(graphql_strings.find { |graphql_string| (graphql_string.include?("creation_story")) && \
                                                             (graphql_string.include?("live_status")) })
       video_permalink = creation_story_object["creation_story"]["shareable"]["url"].delete("\\")
@@ -270,14 +309,26 @@ module Forki
       post_data = extract_post_data(graphql_strings)
       post_data[:url] = url
       user_url = post_data[:profile_link]
-      post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
 
-      page.quit # Close browser between page navigations to prevent cache folder access issues
+      5.times do
+        begin
+          post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+          break
+        rescue Net::ReadTimeout; end
+
+        sleep(5)
+      end
+
+      # page.quit # Close browser between page navigations to prevent cache folder access issues
 
       post_data[:user] = User.lookup(user_url).first
       page.quit
 
       post_data
+    rescue StandardError => e
+      raise e
+    ensure
+      page.quit
     end
   end
 end

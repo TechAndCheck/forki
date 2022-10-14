@@ -155,6 +155,25 @@ class PostTest < Minitest::Test
     end
   end
 
+  def test_a_video_works
+    urls = %w[https://www.facebook.com/iwhidby/videos/957333404980798/?__cft__[0]=AZUs48ZqIBsbNqva5zUJvziRhA7W-GJi8O_b1IXB20maEjdiBpmL8_w27Ghpl1b7pp-9UmFGtAfYQFh6KKDP7MUGO9jHGc0PZyae-MeA7-DEBEbZGNoxPaO2GQSukEx8VyIXm2y2UOw4j616U600XkNQ&__tn__=%2CO%2CP-R]
+    posts = Forki::Post.lookup(urls)
+    posts.each do |post|
+      assert post.has_video
+
+      assert post.num_comments.positive?
+      assert post.reactions.length.positive?
+
+      assert_not_nil post.video_file
+      assert_not_nil post.screenshot_file
+      assert_not_nil post.video_preview_image_file
+      assert_nil post.image_file
+
+      assert_not_nil post.user
+      assert_not_nil post.created_at
+    end
+  end
+
   def test_scraping_a_bad_url_raises_invalid_url_exception
     assert_raises "invalid url" do
       Forki::Post.lookup("https://www.instagram.com/3141592653589")
@@ -164,6 +183,12 @@ class PostTest < Minitest::Test
   def test_scraping_an_inaccessible_post_raises_a_content_not_available_exception
     assert_raises Forki::ContentUnavailableError do
       Forki::Post.lookup("https://www.facebook.com/redwhitebluenews/videos/258470355199081/")
+    end
+  end
+
+  def test_scraping_a_taken_down_post_raises_a_content_not_available_exception
+    assert_raises Forki::ContentUnavailableError do
+      Forki::Post.lookup("https://www.facebook.com/photo.php?fbid=10163749206915113&set=a.329268060112&type=3&theater/")
     end
   end
 end

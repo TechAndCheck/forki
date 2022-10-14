@@ -8,12 +8,12 @@ require "selenium-webdriver"
 require "open-uri"
 
 options = Selenium::WebDriver::Chrome::Options.new
-options.add_argument("--window-size=1400,1400")
+options.add_argument("--window-size=1500,1500")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--user-data-dir=/tmp/tarun")
+options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 
-Capybara.register_driver :chrome do |app|
+Capybara.register_driver :selenium_forki do |app|
   client = Selenium::WebDriver::Remote::Http::Default.new
   client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
   Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
@@ -28,8 +28,9 @@ module Forki
     include Capybara::DSL
 
     def initialize
-      Capybara.default_driver = :chrome
+      Capybara.default_driver = :selenium_forki
       Forki.set_logger_level
+      # reset_selenium
     end
 
     # Yeah, just use the tmp/ directory that's created during setup
@@ -73,19 +74,49 @@ module Forki
 
   private
 
+    ##########
+    # Set the session to use a new user folder in the options!
+    # #####################
+    def reset_selenium
+      options = Selenium::WebDriver::Chrome::Options.new
+      options.add_argument("--window-size=1500,1500")
+      options.add_argument("--no-sandbox")
+      options.add_argument("--disable-dev-shm-usage")
+      options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
+
+      Capybara.register_driver :selenium_forki do |app|
+        client = Selenium::WebDriver::Remote::Http::Default.new
+        client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
+        Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
+      end
+
+      Capybara.current_driver = :selenium_forki
+    end
+
     # Logs in to Facebook (if not already logged in)
-    def login
+    def login(url = nil)
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
-      page.quit
+      url ||= "https://www.facebook.com"
+      visit(url)  # Visit the url passed in or the facebook homepage if nothing is
 
-      visit("https://www.facebook.com")  # Visit the Facebook home page
-      return unless page.title.downcase.include?("facebook - log in")  # We should only see this page title if we aren't logged in
+      # Look for the "Password" field, which throws an error if not found. So we catch it and run the rest of the tests
+      begin
+        find_by_id("login_form", wait: 5)
+      rescue Capybara::ElementNotFound
+        return unless page.title.downcase.include?("facebook - log in")
+      end
+
+      # Since we're not logged in, let's do that quick
+      visit("https://www.facebook.com")
 
       fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
       click_button("Log In")
-      sleep 3
+
+      begin
+        raise Forki::BlockedCredentialsError if find_by_id("error_box", wait: 3)
+      rescue Capybara::ElementNotFound; end
     end
 
     # Ensures that a valid Facebook url has been provided, and that it points to an available post
@@ -93,10 +124,10 @@ module Forki
     def validate_and_load_page(url)
       Capybara.app_host = "https://www.facebook.com"
       facebook_url = "https://www.facebook.com"
-      visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
-      login
+      # visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
+      login(url)
       raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
-      visit url
+      visit url unless current_url.start_with?(url)
     end
 
     # Extracts an integer out of a string describing a number
