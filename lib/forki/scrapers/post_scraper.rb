@@ -307,6 +307,17 @@ module Forki
       end.inject { |emoji_counts, count| emoji_counts.merge(count) }
     end
 
+    def take_screenshot
+      # First check whether post being scraped has a fact check overlay. If it does clear it.
+      begin
+        find('div[aria-label=" See Photo "]').click()
+      rescue Capybara::ElementNotFound
+        # Do nothing if element not found
+      end
+
+      save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+    end
+
     # Uses GraphQL data and DOM elements to collect information about the current post
     def parse(url)
       validate_and_load_page(url)
@@ -317,7 +328,7 @@ module Forki
 
       5.times do
         begin
-          post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+          post_data[:screenshot_file] = take_screenshot
           break
         rescue Net::ReadTimeout; end
 
