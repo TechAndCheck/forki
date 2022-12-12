@@ -310,7 +310,7 @@ module Forki
     def take_screenshot
       # First check whether post being scraped has a fact check overlay. If it does clear it.
       begin
-        find('div[aria-label=" See Photo "]').click()
+        find('div[aria-label=" See Photo "]').click() || find('div[aria-label=" See Video "]').click()
       rescue Capybara::ElementNotFound
         # Do nothing if element not found
       end
