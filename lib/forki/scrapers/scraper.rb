@@ -117,6 +117,9 @@ module Forki
       begin
         raise Forki::BlockedCredentialsError if find_by_id("error_box", wait: 3)
       rescue Capybara::ElementNotFound; end
+
+      # Now we wait awhile, hopefully to slow down scraping
+      sleep(rand * 10.3)
     end
 
     # Ensures that a valid Facebook url has been provided, and that it points to an available post
