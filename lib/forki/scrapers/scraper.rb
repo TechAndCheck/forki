@@ -10,6 +10,7 @@ require "open-uri"
 options = Selenium::WebDriver::Chrome::Options.new
 options.add_argument("--window-size=1500,1500")
 options.add_argument("--no-sandbox")
+options.add_argument("--disable-notifications")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 
