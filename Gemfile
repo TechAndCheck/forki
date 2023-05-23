@@ -12,7 +12,7 @@ gem "minitest", "~> 5.0"
 gem "rubocop", "~> 1.7"
 
 gem "rubocop-rails", "~> 2.17.3", require: false # Rails specific styles
-# gem "rubocop-rails_config"
+gem "rubocop-rails_config"
 
 gem "dotenv", "~> 2.7.6"
 
