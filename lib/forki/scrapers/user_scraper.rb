@@ -49,7 +49,6 @@ module Forki
         end
       end
 
-
       {
         id: profile_header_obj["user"]["id"],
         number_of_followers: number_of_followers,
