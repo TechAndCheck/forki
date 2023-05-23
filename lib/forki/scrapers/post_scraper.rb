@@ -49,7 +49,6 @@ module Forki
     end
 
     def check_if_post_is_reel(graphql_object)
-      # debugger
       return false unless graphql_object.key?("node")
 
       begin
@@ -60,8 +59,6 @@ module Forki
 
       style_infos.include?("fb_shorts_story")
     end
-
-
 
     def check_if_post_is_image(graphql_objects)
       graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
@@ -106,8 +103,8 @@ module Forki
       graphql_nodes = nil
       graphql_objects.find do |graphql_object|
         next unless graphql_object.key?("nodes")
-
         graphql_nodes = graphql_object["nodes"]
+
         break
       end
 
@@ -128,6 +125,7 @@ module Forki
         profile_link: graphql_nodes.first["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"].first["url"],
         has_video: true
       }
+
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
       post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = inital_feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["i18n_reaction_count"]
@@ -171,10 +169,12 @@ module Forki
         text = ""
       end
 
-      # debugger
+      feedback_object["comment_list_renderer"]["feedback"]["comment_count"]["total_count"]
+      num_comments = feedback_object.has_key?("comment_list_renderer") ? feedback_object["comment_list_renderer"]["feedback"]["comment_count"]["total_count"] : feedback_object["comment_count"]["total_count"]
+
       post_details = {
         id: video_object["id"],
-        num_comments: feedback_object["comment_count"]["total_count"],
+        num_comments: num_comments,
         num_shares: share_count_object.fetch("count", nil),
         num_views: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["video_view_count"],
         reshare_warning: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"],
@@ -200,9 +200,9 @@ module Forki
 
       post_details = {
         id: video_object["id"],
-        num_comments: feedback_object["comments_count_summary_renderer"]["feedback"]["comment_count"]["total_count"],
+        num_comments: feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"],
         num_shares: share_count_object.fetch("count", nil),
-        num_views: feedback_object["comments_count_summary_renderer"]["feedback"]["comment_count"]["total_count"],
+        num_views: feedback_object["video_view_count"],
         reshare_warning: feedback_object["should_show_reshare_warning"],
         video_preview_image_url: video_object["video"]["preferred_thumbnail"]["image"]["uri"],
         video_url: video_object["video"]["playable_url_quality_hd"] || video_object["video"]["playable_url"],
@@ -211,6 +211,7 @@ module Forki
         profile_link: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true
       }
+
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
       post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
@@ -219,18 +220,21 @@ module Forki
 
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
-      viewer_actor_object = graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
+      graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
       curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.key?("currMedia") }
       creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.key?("creation_story") && graphql_object.key?("message") }
 
+      feedback_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("comet_ufi_summary_and_actions_renderer") }["comet_ufi_summary_and_actions_renderer"]["feedback"]
+      share_count_object = feedback_object.fetch("share_count", {})
+
       poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
 
-      reaction_counts = extract_reaction_counts(viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
       post_details = {
         id: curr_media_object["currMedia"]["id"],
-        num_comments: viewer_actor_object["comment_count"]["total_count"],
-        num_shares: viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"],
-        reshare_warning: viewer_actor_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"],
+        num_comments: feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"],
+        num_shares: share_count_object.fetch("count", nil),
+        reshare_warning: feedback_object["should_show_reshare_warning"],
         image_url: curr_media_object["currMedia"]["image"]["uri"],
         text: (creation_story_object["message"] || {}).fetch("text", nil),
         profile_link: poster["url"],
@@ -251,9 +255,10 @@ module Forki
       video_permalink = creation_story_object["creation_story"]["shareable"]["url"].delete("\\")
       media_object = video_object["video"]["story"]["attachments"][0]["media"]
       reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+
       post_details = {
         id: video_object["id"],
-        num_comments: creation_story_object["feedback"]["comment_count"]["total_count"],
+        num_comments: creation_story_object["feedback"]["total_comment_count"],
         num_shares: nil, # Not present for watch feed videos?
         num_views: creation_story_object["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
         reshare_warning: creation_story_object["feedback"]["should_show_reshare_warning"],
@@ -264,6 +269,7 @@ module Forki
         profile_link: video_permalink[..video_permalink.index("/videos")],
         has_video: true
       }
+
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
       post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
@@ -277,9 +283,10 @@ module Forki
       media_object = JSON.parse(graphql_strings.find { |graphql| graphql.include? "playable_url" })["video"]["creation_story"]["attachments"][0]["media"]
       video_permalink = creation_story_object["shareable"]["url"].delete("\\")
       reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["cannot_see_top_custom_reactions"]["top_reactions"])
+
       post_details = {
         id: creation_story_object["shareable"]["id"],
-        num_comments: creation_story_object["feedback_context"]["feedback_target_with_context"]["comment_count"]["total_count"],
+        num_comments: creation_story_object["feedback_context"]["feedback_target_with_context"]["total_comment_count"],
         num_shares: nil,
         num_views: find_number_of_views, # as far as I can tell, this is never present for live videos
         reshare_warning: creation_story_object["feedback_context"]["feedback_target_with_context"]["should_show_reshare_warning"],
@@ -290,6 +297,7 @@ module Forki
         profile_link: video_permalink[..video_permalink.index("/videos")],
         has_video: true
       }
+
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
       post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
@@ -307,6 +315,17 @@ module Forki
       end.inject { |emoji_counts, count| emoji_counts.merge(count) }
     end
 
+    def take_screenshot
+      # First check whether post being scraped has a fact check overlay. If it does clear it.
+      begin
+        find('div[aria-label=" See Photo "]').click() || find('div[aria-label=" See Video "]').click()
+      rescue Capybara::ElementNotFound
+        # Do nothing if element not found
+      end
+
+      save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+    end
+
     # Uses GraphQL data and DOM elements to collect information about the current post
     def parse(url)
       validate_and_load_page(url)
@@ -317,7 +336,7 @@ module Forki
 
       5.times do
         begin
-          post_data[:screenshot_file] = save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+          post_data[:screenshot_file] = take_screenshot
           break
         rescue Net::ReadTimeout; end
 
@@ -330,6 +349,8 @@ module Forki
       page.quit
 
       post_data
+    rescue Net::ReadTimeout
+      # Eat it?
     rescue StandardError => e
       raise e
     ensure
