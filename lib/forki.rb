@@ -63,7 +63,7 @@ module Forki
   # Get an image from a URL and save to a temp folder set in the configuration under
   # temp_storage_location
   def self.retrieve_media(url)
-    @@forki_logger.info("Forki download started: #{url}")
+    @@forki_logger.debug("Forki download started: #{url}")
     start_time = Time.now
 
     response = Typhoeus.get(url)
@@ -75,10 +75,10 @@ module Forki
     create_temp_storage_location
     File.binwrite(temp_file, response.body)
 
-    @@forki_logger.info("Forki download finished")
-    @@forki_logger.info("Save Location: #{temp_file}")
-    @@forki_logger.info("Size: #{(File.size("./#{temp_file}").to_f / 1024 / 1024).round(4)} MB")
-    @@forki_logger.info("Time to Download: #{(Time.now - start_time).round(3)} seconds")
+    @@forki_logger.debug("Forki download finished")
+    @@forki_logger.debug("Save Location: #{temp_file}")
+    @@forki_logger.debug("Size: #{(File.size("./#{temp_file}").to_f / 1024 / 1024).round(4)} MB")
+    @@forki_logger.debug("Time to Download: #{(Time.now - start_time).round(3)} seconds")
     temp_file
   end
 

@@ -7,17 +7,22 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 
-options = Selenium::WebDriver::Chrome::Options.new
-options.add_argument("--window-size=1500,1500")
+options = Selenium::WebDriver::Options.chrome(exclude_switches: ["enable-automation"])
+options.add_argument("--start-maximized")
 options.add_argument("--no-sandbox")
-options.add_argument("--disable-notifications")
 options.add_argument("--disable-dev-shm-usage")
+options.add_argument("–-disable-blink-features=AutomationControlled")
+options.add_argument("--disable-extensions")
+options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
+options.add_preference "password_manager_enabled", false
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--remote-debugging-port=9222")
 options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 
 Capybara.register_driver :selenium_forki do |app|
   client = Selenium::WebDriver::Remote::Http::Default.new
   client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
-  Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options, http_client: client)
 end
 
 Capybara.default_max_wait_time = 60
@@ -25,7 +30,7 @@ Capybara.threadsafe = true
 Capybara.reuse_server = true
 
 module Forki
-  class Scraper
+  class Scraper # rubocop:disable Metrics/ClassLength
     include Capybara::DSL
 
     def initialize
@@ -79,16 +84,22 @@ module Forki
     # Set the session to use a new user folder in the options!
     # #####################
     def reset_selenium
-      options = Selenium::WebDriver::Chrome::Options.new
-      options.add_argument("--window-size=1500,1500")
+      options = Selenium::WebDriver::Options.chrome(exclude_switches: ["enable-automation"])
+      options.add_argument("--start-maximized")
       options.add_argument("--no-sandbox")
       options.add_argument("--disable-dev-shm-usage")
+      options.add_argument("–-disable-blink-features=AutomationControlled")
+      options.add_argument("--disable-extensions")
+      options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
+      options.add_preference "password_manager_enabled", false
+      options.add_argument("--disable-dev-shm-usage")
+      options.add_argument("--remote-debugging-port=9222")
       options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 
       Capybara.register_driver :selenium_forki do |app|
         client = Selenium::WebDriver::Remote::Http::Default.new
         client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
-        Capybara::Selenium::Driver.new(app, browser: :chrome, url: "http://localhost:4444/wd/hub", capabilities: options, http_client: client)
+        Capybara::Selenium::Driver.new(app, browser: :chrome, options: options, http_client: client)
       end
 
       Capybara.current_driver = :selenium_forki
@@ -101,19 +112,32 @@ module Forki
       url ||= "https://www.facebook.com"
       visit(url)  # Visit the url passed in or the facebook homepage if nothing is
 
-      # Look for the "Password" field, which throws an error if not found. So we catch it and run the rest of the tests
+      # Look for "login_form" box, which throws an error if not found. So we catch it and run the rest of the tests
       begin
-        find_by_id("login_form", wait: 5)
+        login_form = first(id: "login_form", wait: 5)
       rescue Capybara::ElementNotFound
         return unless page.title.downcase.include?("facebook - log in")
       end
 
       # Since we're not logged in, let's do that quick
-      visit("https://www.facebook.com")
+      visit("https://www.facebook.com") if login_form.nil?
 
-      fill_in("email", with: ENV["FACEBOOK_EMAIL"])
-      fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
-      click_button("Log In")
+      login_form.fill_in("email", with: ENV["FACEBOOK_EMAIL"])
+      login_form.fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
+
+      # This is a pain because some pages just `click_button` would work, but some won't
+      login_buttons = login_form.all("div", text: "Log In", wait: 5)
+
+      if login_buttons.empty?
+        login_form.click_button("Log In")
+      else
+        login_buttons.each do |button|
+          if button.text == "Log In"
+            button.click
+            break
+          end
+        end
+      end
 
       begin
         raise Forki::BlockedCredentialsError if find_by_id("error_box", wait: 3)
