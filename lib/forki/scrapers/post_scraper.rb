@@ -349,8 +349,9 @@ module Forki
       page.quit
 
       post_data
-    rescue Net::ReadTimeout
-      # Eat it?
+    rescue Net::ReadTimeout => e
+      puts "Time out error: #{e}"
+      puts e.backtrace
     rescue StandardError => e
       raise e
     ensure
