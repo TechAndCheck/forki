@@ -110,7 +110,12 @@ module Forki
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
       url ||= "https://www.facebook.com"
-      visit(url)  # Visit the url passed in or the facebook homepage if nothing is
+
+      begin
+        visit(url)  # Visit the url passed in or the facebook homepage if nothing is
+      rescue Net::ReadTimeout => e
+        # Eat it
+      end
 
       # Look for "login_form" box, which throws an error if not found. So we catch it and run the rest of the tests
       begin
