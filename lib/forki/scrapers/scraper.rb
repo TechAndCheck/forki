@@ -111,11 +111,7 @@ module Forki
 
       url ||= "https://www.facebook.com"
 
-      begin
-        visit(url)  # Visit the url passed in or the facebook homepage if nothing is
-      rescue Net::ReadTimeout => e
-        # Eat it
-      end
+      page.driver.browser.navigate.to(url)  # Visit the url passed in or the facebook homepage if nothing is
 
       # Look for "login_form" box, which throws an error if not found. So we catch it and run the rest of the tests
       begin
@@ -125,7 +121,7 @@ module Forki
       end
 
       # Since we're not logged in, let's do that quick
-      visit("https://www.facebook.com") if login_form.nil?
+      page.driver.browser.navigate.to("https://www.facebook.com") if login_form.nil?
 
       login_form.fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       login_form.fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
