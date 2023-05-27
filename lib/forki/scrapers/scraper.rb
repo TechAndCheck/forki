@@ -6,6 +6,7 @@ require "dotenv/load"
 require "oj"
 require "selenium-webdriver"
 require "open-uri"
+require 'selenium/webdriver/remote/http/curb'
 
 options = Selenium::WebDriver::Options.chrome(exclude_switches: ["enable-automation"])
 options.add_argument("--start-maximized")
@@ -20,8 +21,8 @@ options.add_argument("--remote-debugging-port=9222")
 options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 
 Capybara.register_driver :selenium_forki do |app|
-  client = Selenium::WebDriver::Remote::Http::Default.new
-  client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
+  client = Selenium::WebDriver::Remote::Http::Curb.new
+  # client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
   Capybara::Selenium::Driver.new(app, browser: :chrome, options: options, http_client: client)
 end
 
@@ -97,8 +98,8 @@ module Forki
       options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
 
       Capybara.register_driver :selenium_forki do |app|
-        client = Selenium::WebDriver::Remote::Http::Default.new
-        client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
+        client = Selenium::WebDriver::Remote::Http::Curb.new
+        # client.read_timeout = 60  # Don't wait 60 seconds to return Net::ReadTimeoutError. We'll retry through Hypatia after 10 seconds
         Capybara::Selenium::Driver.new(app, browser: :chrome, options: options, http_client: client)
       end
 
@@ -110,6 +111,7 @@ module Forki
       raise MissingCredentialsError if ENV["FACEBOOK_EMAIL"].nil? || ENV["FACEBOOK_PASSWORD"].nil?
 
       url ||= "https://www.facebook.com"
+
 
       page.driver.browser.navigate.to(url)  # Visit the url passed in or the facebook homepage if nothing is
 

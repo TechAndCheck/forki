@@ -19,3 +19,5 @@ gem "dotenv", "~> 2.7.6"
 gem "byebug"
 
 gem "rack", "2.2.4"
+
+gem "curb", "~> 1.0", ">= 1.0.5"
