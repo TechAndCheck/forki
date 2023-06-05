@@ -62,8 +62,16 @@ module Forki
 
     def check_if_post_is_image(graphql_objects)
       graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
-        true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
-        true unless graphql_object.fetch("currMedia", nil).nil?
+        return true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
+        return true unless graphql_object.fetch("currMedia", nil).nil?
+
+        # This is a complicated form for `web.facebook.com` posts
+
+        if !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil?
+          if graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].count.positive?
+            return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "all_subattachments", "nodes")&.first&.dig("media", "image", "uri").nil?
+          end
+        end
       end
     end
 
@@ -220,26 +228,53 @@ module Forki
 
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
-      graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
-      curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.key?("currMedia") }
-      creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.key?("creation_story") && graphql_object.key?("message") }
+      # This is a weird one-off style
+      graphql_object = graphql_object_array.find { |graphql_object| !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil? }
+      unless graphql_object.nil? || graphql_object.count == 0
+        attachments = graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"]
 
-      feedback_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("comet_ufi_summary_and_actions_renderer") }["comet_ufi_summary_and_actions_renderer"]["feedback"]
-      share_count_object = feedback_object.fetch("share_count", {})
+        reaction_counts = extract_reaction_counts(graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+        id = graphql_object["node"]["post_id"]
+        num_comments = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"]
+        reshare_warning = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
+        image_url = attachments.first["styles"]["attachment"]["all_subattachments"]["nodes"].first["media"]["image"]["uri"]
+        text = graphql_object["node"]["comet_sections"]["content"]["story"]["message"]["text"]
+        profile_link = graphql_object["node"]["comet_sections"]["content"]["story"]["actors"].first["url"]
+        created_at = graphql_object["node"]["comet_sections"]["content"]["story"]["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"].first["story"]["creation_time"]
+        has_video = false
+      else
 
-      poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
+        graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
+        curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.key?("currMedia") }
+        creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.key?("creation_story") && graphql_object.key?("message") }
 
-      reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
+        feedback_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("comet_ufi_summary_and_actions_renderer") }["comet_ufi_summary_and_actions_renderer"]["feedback"]
+        share_count_object = feedback_object.fetch("share_count", {})
+
+        poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
+
+        reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
+        id = curr_media_object["currMedia"]["id"],
+        num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"],
+        num_shares = share_count_object.fetch("count", nil),
+        reshare_warning = feedback_object["should_show_reshare_warning"],
+        image_url = curr_media_object["currMedia"]["image"]["uri"],
+        text = (creation_story_object["message"] || {}).fetch("text", nil),
+        profile_link = poster["url"],
+        created_at = curr_media_object["currMedia"]["created_time"],
+        has_video = false
+
+      end
       post_details = {
-        id: curr_media_object["currMedia"]["id"],
-        num_comments: feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"],
-        num_shares: share_count_object.fetch("count", nil),
-        reshare_warning: feedback_object["should_show_reshare_warning"],
-        image_url: curr_media_object["currMedia"]["image"]["uri"],
-        text: (creation_story_object["message"] || {}).fetch("text", nil),
-        profile_link: poster["url"],
-        created_at: curr_media_object["currMedia"]["created_time"],
-        has_video: false
+        id: id,
+        num_comments: num_comments,
+        num_shares: num_shares,
+        reshare_warning: reshare_warning,
+        image_url: image_url,
+        text: text,
+        profile_link: profile_link,
+        created_at: created_at,
+        has_video: has_video
       }
       post_details[:image_file] = Forki.retrieve_media(post_details[:image_url])
       post_details[:reactions] = reaction_counts

@@ -39,9 +39,14 @@ module Forki
         profile_title_section = graphql_strings.find { |gql| gql.include? "profile_tile_section_type" }
 
         json = JSON.parse(profile_title_section)
-        followers_node = json["user"]["profile_tile_sections"]["edges"].first["node"]["profile_tile_views"]["nodes"][1]["view_style_renderer"]["view"]["profile_tile_items"]["nodes"].select do |node|
-          node["node"]["timeline_context_item"]["timeline_context_list_item_type"] == "INTRO_CARD_FOLLOWERS"
-        end
+
+        followers_node = []
+        begin
+          followers_node = json["user"]["profile_tile_sections"]["edges"].first["node"]["profile_tile_views"]["nodes"][1]["view_style_renderer"]["view"]["profile_tile_items"]["nodes"].select do |node|
+            node["node"]["timeline_context_item"]["timeline_context_list_item_type"] == "INTRO_CARD_FOLLOWERS"
+          end
+        rescue NoMethodError; end
+
         if followers_node.empty?
           number_of_followers = nil
         else

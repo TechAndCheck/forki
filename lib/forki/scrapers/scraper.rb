@@ -6,7 +6,7 @@ require "dotenv/load"
 require "oj"
 require "selenium-webdriver"
 require "open-uri"
-require 'selenium/webdriver/remote/http/curb'
+require "selenium/webdriver/remote/http/curb"
 
 options = Selenium::WebDriver::Options.chrome(exclude_switches: ["enable-automation"])
 options.add_argument("--start-maximized")
