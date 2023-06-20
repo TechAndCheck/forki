@@ -100,7 +100,11 @@ module Forki
         begin
           find("span", wait: 5, text: "This Video Isn't Available Anymore", exact_text: false)
         rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
-          return true
+          begin
+            find("span", wait: 5, text: "This Page Isn't Available", exact_text: false)
+          rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
+            return true
+          end
         end
       end
 

@@ -112,18 +112,41 @@ module Forki
 
       url ||= "https://www.facebook.com"
 
-
       page.driver.browser.navigate.to(url)  # Visit the url passed in or the facebook homepage if nothing is
 
       # Look for "login_form" box, which throws an error if not found. So we catch it and run the rest of the tests
       begin
         login_form = first(id: "login_form", wait: 5)
       rescue Capybara::ElementNotFound
-        return unless page.title.downcase.include?("facebook - log in")
+        begin
+          login_form = find(:xpath, '//form[@data-testid="royal_login_form"]')
+        rescue Capybara::ElementNotFound
+          return unless page.title.downcase.include?("facebook - log in")
+        end
       end
 
-      # Since we're not logged in, let's do that quick
-      page.driver.browser.navigate.to("https://www.facebook.com") if login_form.nil?
+      # Since we're not logged in, let's do that quickly
+      if login_form.nil?
+        page.driver.browser.navigate.to("https://www.facebook.com")
+
+        # Find the login form... again (Yes, we could extract this out, but it's only ever used
+        # here, so it's not worth the effort)
+        begin
+          login_form = first(id: "login_form", wait: 5)
+        rescue Capybara::ElementNotFound
+          begin
+            login_form = find(:xpath, '//form[@data-testid="royal_login_form"]')
+          rescue Capybara::ElementNotFound
+            return unless page.title.downcase.include?("facebook - log in")
+          end
+        end
+      end
+
+      if login_form.nil?
+        # maybe we're already logged in?
+        sleep(rand * 10.3)
+        return
+      end
 
       login_form.fill_in("email", with: ENV["FACEBOOK_EMAIL"])
       login_form.fill_in("pass", with: ENV["FACEBOOK_PASSWORD"])
@@ -154,10 +177,19 @@ module Forki
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
       Capybara.app_host = "https://www.facebook.com"
-      facebook_url = "https://www.facebook.com"
-      # visit "https://www.facebook.com" unless current_url.start_with?(facebook_url)
-      login(url)
-      raise Forki::InvalidUrlError unless url.start_with?(facebook_url)
+      facebook_hosts = ["facebook.com", "www.facebook.com", "web.facebook.com", "m.facebook.com"]
+      parsed_url = URI.parse(url)
+      host = parsed_url.host
+      raise Forki::InvalidUrlError unless facebook_hosts.include?(host)
+
+      # Replace the host with a default one to prevent redirect loops that can happen
+      unless parsed_url.host == "www.facebook.com"
+        parsed_url.host = "www.facebook.com"
+        url = parsed_url.to_s
+      end
+
+      visit "https://www.facebook.com"
+      login
       visit url unless current_url.start_with?(url)
     end
 

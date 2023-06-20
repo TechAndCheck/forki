@@ -31,6 +31,14 @@ class PostTest < Minitest::Test
     end
   end
 
+  def test_that_a_post_with_web_dot_facebook_scrapes
+    urls = %w[https://web.facebook.com/381726605193429/photos/a.764764956889590/3625268454172545/]
+
+    posts = Forki::Post.lookup(urls)
+
+    assert_equal 1, posts.count
+  end
+
   def test_that_a_video_post_in_a_comment_thread_is_detected_correctly
     urls = %w[https://www.facebook.com/PlandemicMovie/videos/588866298398729/]
 
