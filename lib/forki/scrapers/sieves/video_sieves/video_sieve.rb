@@ -19,6 +19,6 @@ private
   end
 end
 
-Dir['./lib/forki/scrapers/sieves/video_sieves/*.rb'].each do |file|
+Dir[File.join(__dir__, '*.rb')].each do |file|
   require file unless file.end_with?("video_sieve.rb")
 end

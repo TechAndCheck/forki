@@ -8,6 +8,7 @@ require_relative "forki/post"
 
 require "helpers/configuration"
 require_relative "forki/scrapers/scraper"
+require_relative "forki/scrapers/sieves/video_sieves/video_sieve"
 
 module Forki
   extend Configuration
