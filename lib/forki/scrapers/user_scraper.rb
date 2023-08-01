@@ -3,10 +3,14 @@ require "typhoeus"
 module Forki
   class UserScraper < Scraper
     # Finds and returns the number of people who like the current page
-    def find_number_of_likes
-      likes_pattern = /[0-9,.KM ] people like this/
-      number_of_likes_elem = all("span").filter { | span| likes_pattern.match? span.text }.first
-      extract_int_from_num_element(number_of_likes_elem)
+    def find_number_of_likes(profile_details_string)
+      likes_pattern = /[0-9,.KM ] likes/
+      likes_pattern = /(?<num_likes>[0-9,.KM ]+) (l|L)ikes/
+      number_of_likes_match = likes_pattern.match(profile_details_string)
+
+      return nil if number_of_likes_match.nil?
+
+      extract_int_from_num_element(number_of_likes_match.named_captures["num_likes"])
     end
 
     # Finds and returns the number of people who follow the current page
@@ -14,8 +18,18 @@ module Forki
       followers_pattern = /Followed by (?<num_followers>[0-9,.KM ]) people/
       alt_follower_pattern = /(?<num_followers>[0-9,.KM ]+) (f|F)ollowers/
       number_of_followers_match = followers_pattern.match(profile_details_string) || alt_follower_pattern.match(profile_details_string)
+
       return nil if number_of_followers_match.nil?
-      extract_int_from_num_element(number_of_followers_match.named_captures["num_followers"])
+
+      number_of_followers = extract_int_from_num_element(number_of_followers_match.named_captures["num_followers"])
+
+      # Note, this is sticking around if we want to use it later
+      # if number_of_followers.nil?
+      #   number_of_followers_string = JSON.parse(profile_header_str)["user"]["profile_header_renderer"]["user"]["profile_social_context"]["content"].first["text"]["text"]
+      #   number_of_followers = extract_int_from_num_element(number_of_followers_string)
+      # end
+
+      number_of_followers
     end
 
     def find_number_followers_for_normal_profile(profile_followers_node)
@@ -61,6 +75,7 @@ module Forki
         verified: profile_header_obj["user"]["is_verified"],
         profile: profile_intro_obj ? profile_intro_obj["profile_intro_card"]["bio"]["text"] : "",
         profile_image_url: profile_header_obj["user"]["profilePicLarge"]["uri"],
+        number_of_likes: find_number_of_likes(profile_header_str),
       }
     end
 

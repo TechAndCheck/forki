@@ -108,7 +108,6 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
-      assert post.num_views.positive?
 
       assert post.num_comments.positive?
       assert post.reactions.length.positive?
@@ -129,7 +128,7 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
-      assert post.num_views.positive?
+      assert post.num_views.nil? # Not implemented from Facebook here
 
       assert post.num_comments.positive?
       assert post.reactions.length.positive?

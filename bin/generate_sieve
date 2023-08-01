@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "forki"
+require "thor"
+require "erb"
+
+class GenerateSieve < Thor
+
+  desc "generate TYPE NAME", "generate a TYPE named NAME"
+  option :video
+  option :image
+  def generate(type, name)
+    case type
+    when "post"
+      if !options[:video].nil?
+        style = :video
+      elsif !options[:image].nil?
+        style = :image
+      else
+        puts "Must indicate either video or image flag"
+        exit
+      end
+
+      SieveGenerator.generate_post_sieve(name, style)
+    when "user"
+      SieveGenerator.generate_user_sieve(name)
+    else
+      puts "Type must be `post` or `user` only. `#{type}` passed in."
+      exit
+    end
+  end
+end
+
+class SieveGenerator
+  def self.generate_post_sieve(name, style)
+    puts "Generating post sieve named #{name} with style #{style}"
+
+    file_path = "./lib/forki/scrapers/sieves/"
+    test_path = "./test/sieves/"
+    case style
+    when :video
+      test_data_valid_path = "#{test_path}/video_sieves/test_data/video_sieve_#{name}_valid.json"
+      test_data_invalid_path = "#{test_path}/video_sieves/test_data/video_sieve_#{name}_invalid.json"
+
+      file_path += "video_sieves/video_sieve_#{name}.rb"
+      test_path += "video_sieves/video_sieve_#{name}_test.rb"
+      file_template = File.read("./bin/generator_templates/video_sieve_template.rb.erb")
+      test_file_template = File.read("./bin/generator_templates/video_sieve_test_template.rb.erb")
+    when :image
+      test_data_valid_path = "#{test_path}/image_sieves/test_data/image_sieve_#{name}_valid.json"
+      test_data_invalid_path = "#{test_path}/image_sieves/test_data/image_sieve_#{name}_invalid.json"
+
+      file_path += "image_sieves/image_sieve_#{name}.rb"
+      test_path += "image_sieves/image_sieve_#{name}_test.rb"
+      file_template = File.read("./bin/generator_templates/image_sieve_template.rb.erb")
+      test_file_template = File.read("./bin/generator_templates/image_sieve_test_template.rb.erb")
+    end
+
+    file_contents = ERB.new(file_template)
+    test_file_contents = ERB.new(test_file_template)
+
+    camel_name = name.split('_').collect(&:capitalize).join
+
+    File.write(file_path, file_contents.result(binding))
+    File.write(test_path, test_file_contents.result(binding))
+
+    File.write(test_data_valid_path, "")
+    File.write(test_data_invalid_path, "")
+  end
+
+  def self.generate_user_sieve(name)
+    puts "Generating user sieve named #{name}"
+  end
+end
+
+GenerateSieve.start(ARGV)
+

@@ -4,6 +4,7 @@ require "typhoeus"
 require "securerandom"
 require "byebug"
 
+
 module Forki
   # rubocop:disable Metrics/ClassLength
   class PostScraper < Scraper
@@ -154,21 +155,30 @@ module Forki
       end
 
       graphql_object_array = graphql_strings.map { |graphql_string| JSON.parse(graphql_string) }
+
+      # Once in awhile it's really easy
+      video_objects = graphql_object_array.filter {|go| go.has_key?("video") }
+
+      if VideoSieve.can_process_with_sieve?(graphql_object_array)
+        # Eventually all of this complexity will be replaced with this
+        return VideoSieve.sieve_for_graphql_objects(graphql_object_array)
+      end
+
       story_node_object = graphql_object_array.find { |graphql_object| graphql_object.key? "node" }&.fetch("node", nil) # user posted video
       story_node_object = story_node_object || graphql_object_array.find { |graphql_object| graphql_object.key? "nodes" }&.fetch("nodes")&.first # page posted video
 
       return extract_video_post_data_alternative(graphql_object_array) if story_node_object.nil?
 
       if story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("media")
-        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
-        creation_date = video_object["publish_time"]
-        # creation_date = video_object["video"]["publish_time"]
+        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]["video"]
+        creation_date = video_object["publish_time"] if video_object&.has_key("publish_time")
+        creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"] if creation_date.nil?
       elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("style_infos")
         # For "Reels" we need a separate way to parse this
         video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["short_form_video_context"]["playback_video"]
         creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["creation_time"]
       else
-        raise "Unable to parse video object"
+        raise "Unable to parse video object" if video_objects.empty?
       end
 
       feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
@@ -191,7 +201,7 @@ module Forki
         num_views: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["video_view_count"],
         reshare_warning: feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"],
         video_preview_image_url: video_object["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_object["playable_url_quality_hd"] || video_object["playable_url"],
+        video_url: video_object["browser_native_hd_url"] || video_object["browser_native_sd_url"],
         text: text,
         created_at: creation_date,
         profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
@@ -217,7 +227,7 @@ module Forki
         num_views: feedback_object["video_view_count"],
         reshare_warning: feedback_object["should_show_reshare_warning"],
         video_preview_image_url: video_object["video"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_object["video"]["playable_url_quality_hd"] || video_object["video"]["playable_url"],
+        video_url: video_object["video"]["playable_url_quality_hd"] || video_object["video"]["browser_native_hd_url"] || video_object["video"]["browser_native_sd_url"] || video_object["video"]["playable_url"],
         text: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["message"]["story"]["message"]["text"],
         created_at: video_object["video"]["publish_time"],
         profile_link: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
@@ -369,6 +379,7 @@ module Forki
     def parse(url)
       validate_and_load_page(url)
       graphql_strings = find_graphql_data_strings(page.html)
+
       post_data = extract_post_data(graphql_strings)
       post_data[:url] = url
       user_url = post_data[:profile_link]
@@ -398,3 +409,6 @@ module Forki
     end
   end
 end
+
+require_relative "sieves/video_sieves/video_sieve"
+

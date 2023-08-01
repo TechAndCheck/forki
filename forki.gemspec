@@ -37,6 +37,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "oj" # A faster JSON parser/loader than stdlib
   spec.add_dependency "selenium-webdriver" # Webdriver selenium
 
+  spec.add_development_dependency "thor" # For the generator
+
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
 end

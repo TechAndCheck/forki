@@ -7,6 +7,7 @@ require "oj"
 require "selenium-webdriver"
 require "open-uri"
 require "selenium/webdriver/remote/http/curb"
+require "cgi"
 
 options = Selenium::WebDriver::Options.chrome(exclude_switches: ["enable-automation"])
 options.add_argument("--start-maximized")
@@ -190,8 +191,20 @@ module Forki
 
       visit "https://www.facebook.com"
       login
+
       visit url unless current_url.start_with?(url)
+      # # If the video is a watch page it doesn't have most of the data we want so we click on the video
+      # if url.include?("watch/live")
+      #   clickable_element = find("video")
+
+      #   while(clickable_element.obscured?)
+      #     clickable_element = clickable_element.find(:xpath, "..")
+      #   end
+
+      #   clickable_element.click
+      # end
     end
+
 
     # Extracts an integer out of a string describing a number
     # e.g. "4K Comments" returns 4000
@@ -203,19 +216,23 @@ module Forki
         element = element.text(:all)
       end
 
-      num_pattern = /[0-9KM ,.]+/
-      interaction_num_text = num_pattern.match(element)[0]
-
-      if interaction_num_text.include?(".")  # e.g. "2.2K"
-        interaction_num_text.to_i + interaction_num_text[-2].to_i * 100
-      elsif interaction_num_text.include?("K") # e.g. "13K"
-        interaction_num_text.to_i * 1000
-      elsif interaction_num_text.include?("M") # e.g. "13M"
-        interaction_num_text.to_i * 1_000_000
-      else  # e.g. "15,443"
-        interaction_num_text.delete!(",")
-        interaction_num_text.delete(" ").to_i
+      # Check if there's a modifier i.e. `K` or `M` if there isn't just return the number
+      unless element.include?("K") || element.include?("M")
+        element.delete(",") # "5,456" e.g.
+        return element.to_i
       end
+
+      modifier = element[-1]
+      number = element[0...-1].to_f
+
+      case modifier
+      when "K"
+        number = number * 1_000
+      when "M"
+        number = number * 1_000_000
+      end
+
+      number.to_i
     end
   end
 end
