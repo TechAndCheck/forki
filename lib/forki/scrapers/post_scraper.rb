@@ -15,7 +15,7 @@ module Forki
       views_pattern = /[0-9MK, ]+Views/
       spans = all("span")
       views_span = spans.find { |s| s.text(:all) =~ views_pattern }
-      extract_int_from_num_element(views_span)
+      Scraper.extract_int_from_num_element(views_span)
     end
 
     def extract_post_data(graphql_strings)
@@ -215,7 +215,7 @@ module Forki
 
     def extract_video_post_data_alternative(graphql_object_array)
       sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.key?("tahoe_sidepane_renderer") }
-      video_object = graphql_object_array.find { |graphql_object| graphql_object.keys == ["video"] }
+      video_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("video") }
       feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
       reaction_counts = extract_reaction_counts(sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
       share_count_object = feedback_object.fetch("share_count", {})

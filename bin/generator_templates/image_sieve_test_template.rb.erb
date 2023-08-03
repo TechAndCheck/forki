@@ -29,7 +29,7 @@ class ImageSieve<%= camel_name %>Test < Minitest::Test
     assert_equal false, result[:reshare_warning]
     assert_not_nil result[:video_preview_image_url]
     assert_not_nil result[:video_url]
-    assert_equal nil, text
+    assert_equal nil, result[:text]
     assert_equal 1654989063, result[:created_at]
     assert_equal nil, result[:profile_link]
     assert_equal false, result[:has_video]

@@ -215,4 +215,10 @@ class PostTest < Minitest::Test
     assert_not_nil post.user
     assert_not_nil post.created_at
   end
+
+  def test_reel
+    # https://www.facebook.com/reel/809749953859034
+    post = Forki::Post.lookup("https://www.facebook.com/reel/809749953859034").first
+    assert_not_nil(post)
+  end
 end

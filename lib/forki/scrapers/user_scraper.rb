@@ -10,7 +10,7 @@ module Forki
 
       return nil if number_of_likes_match.nil?
 
-      extract_int_from_num_element(number_of_likes_match.named_captures["num_likes"])
+      Scraper.extract_int_from_num_element(number_of_likes_match.named_captures["num_likes"])
     end
 
     # Finds and returns the number of people who follow the current page
@@ -21,12 +21,12 @@ module Forki
 
       return nil if number_of_followers_match.nil?
 
-      number_of_followers = extract_int_from_num_element(number_of_followers_match.named_captures["num_followers"])
+      number_of_followers = Scraper.extract_int_from_num_element(number_of_followers_match.named_captures["num_followers"])
 
       # Note, this is sticking around if we want to use it later
       # if number_of_followers.nil?
       #   number_of_followers_string = JSON.parse(profile_header_str)["user"]["profile_header_renderer"]["user"]["profile_social_context"]["content"].first["text"]["text"]
-      #   number_of_followers = extract_int_from_num_element(number_of_followers_string)
+      #   number_of_followers = Scraper.extract_int_from_num_element(number_of_followers_string)
       # end
 
       number_of_followers
@@ -36,7 +36,7 @@ module Forki
       followers_string = profile_followers_node["node"]["timeline_context_item"]["renderer"]["context_item"]["title"]["text"]
       followers_pattern = /[0-9,]+/
       number_of_followers_match = followers_pattern.match(followers_string).to_s
-      extract_int_from_num_element(number_of_followers_match)
+      Scraper.extract_int_from_num_element(number_of_followers_match)
     end
 
     # Returns a hash of details about a Facebook user profile

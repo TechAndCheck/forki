@@ -209,7 +209,7 @@ module Forki
     # Extracts an integer out of a string describing a number
     # e.g. "4K Comments" returns 4000
     # e.g. "131 Shares" returns 131
-    def extract_int_from_num_element(element)
+    def self.extract_int_from_num_element(element)
       return unless element
 
       if element.class != String # if an html element was passed in
