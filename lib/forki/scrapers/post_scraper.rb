@@ -393,7 +393,7 @@ module Forki
         sleep(5)
       end
 
-      # page.quit # Close browser between page navigations to prevent cache folder access issues
+      # page.quit # Close browser between page navigation to prevent cache folder access issues
 
       post_data[:user] = User.lookup(user_url).first
       page.quit
@@ -405,7 +405,12 @@ module Forki
     rescue StandardError => e
       raise e
     ensure
-      page.quit
+      # `page` here can be broken already. In which case we want to raise an error so it's retried later
+      begin
+        page.quit
+      rescue Curl::Err::ConnectionFailedError
+        raise Forki::RretryableError # This insures it'll eventually be retried by Hypatia
+      end
     end
   end
 end
