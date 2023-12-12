@@ -1,17 +1,16 @@
-class VideoSieveReel < VideoSieve
+class VideoSieveReel2 < VideoSieve
   # To check if it's valid for the inputted graphql objects
   def self.check(graphql_objects)
     video_object = self.extractor(graphql_objects)
 
     return false unless video_object.has_key?("short_form_video_context")
 
-    # In relation to video_sieve_reel_2
     comment_count = graphql_objects.filter do |go|
       go = go.first if go.kind_of?(Array) && !go.empty?
       !go.dig("feedback", "total_comment_count").nil?
     end.first
 
-    return false unless comment_count.nil?
+    return false if comment_count.nil?
 
     true
   rescue StandardError
@@ -43,7 +42,7 @@ class VideoSieveReel < VideoSieve
 
     feedback_object = graphql_objects.filter do |go|
       go = go.first if go.kind_of?(Array) && !go.empty?
-      !go.dig("feedback", "top_level_comments").nil?
+      !go.dig("feedback", "total_comment_count").nil?
     end.first
 
     reels_feedback_renderer = graphql_objects.filter do |go|
@@ -58,20 +57,22 @@ class VideoSieveReel < VideoSieve
 
     post_details = {
       id: video_object["short_form_video_context"]["video"]["id"],
-      num_comments: feedback_object["feedback"]["top_level_comments"]["totalCountIncludingReplies"],
+      num_comments: feedback_object["feedback"]["total_comment_count"],
       num_shared: Forki::Scraper.extract_int_from_num_element(feedback_object["feedback"]["share_count_reduced"]),
       num_views: nil,
       reshare_warning: reshare_warning,
       video_preview_image_url: video_preview_image_url,
       video_url: video_url,
       text: nil, # Reels don't have text
-      created_at: JSON.parse(feedback_object["tracking"])["page_insights"].first[1]["post_context"]["publish_time"], # Yea, this is weird
+      created_at: video_object["creation_time"],
       profile_link: video_object["short_form_video_context"]["video_owner"]["url"],
       has_video: true,
       video_preview_image_file: Forki.retrieve_media(video_preview_image_url),
       video_file: Forki.retrieve_media(video_url),
       reactions: nil # Only available on comments it seems? Look into this again sometime
     }
+  rescue StandardError => e
+    debugger
   end
 
   private

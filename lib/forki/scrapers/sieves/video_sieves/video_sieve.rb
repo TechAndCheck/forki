@@ -14,7 +14,7 @@ class VideoSieve
 private
 
   def self.sieve_class_for_graphql_objects(graphql_objects)
-    sieves = [VideoSieveWatchTab, VideoSieveVideoPage, VideoSieveReel]
+    sieves = [VideoSieveWatchTab, VideoSieveVideoPage, VideoSieveVideoPage2, VideoSieveReel, VideoSieveReel2]
     sieves.detect { |sieve| sieve.check(graphql_objects) }
   end
 end

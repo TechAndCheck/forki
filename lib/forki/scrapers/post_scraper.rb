@@ -182,7 +182,12 @@ module Forki
       end
 
       feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
-      reaction_counts = extract_reaction_counts(feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      if feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"].key?("cannot_see_top_custom_reactions")
+        reaction_counts = extract_reaction_counts(feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      else
+        reaction_counts = extract_reaction_counts(feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["top_reactions"])
+      end
+
       share_count_object = feedback_object.fetch("share_count", {})
 
       if story_node_object["comet_sections"]["content"]["story"]["comet_sections"].key? "message"
@@ -191,8 +196,19 @@ module Forki
         text = ""
       end
 
-      feedback_object["comment_list_renderer"]["feedback"]["comment_count"]["total_count"]
-      num_comments = feedback_object.has_key?("comment_list_renderer") ? feedback_object["comment_list_renderer"]["feedback"]["comment_count"]["total_count"] : feedback_object["comment_count"]["total_count"]
+      if feedback_object.has_key?("comment_list_renderer")
+        if feedback_object["comment_list_renderer"]["feedback"].key?("comment_count")
+          num_comments = feedback_object["comment_list_renderer"]["feedback"]["comment_count"]["total_count"]
+        else
+          num_comments = feedback_object["comment_list_renderer"]["feedback"]["total_comment_count"]
+        end
+      else
+        if feedback_object["feedback"].key?("comment_count")
+          num_comments = feedback_object["feedback"]["comment_count"]["total_count"]
+        else
+          num_comments = feedback_object["feedback"]["total_comment_count"]
+        end
+      end
 
       post_details = {
         id: video_object["id"],
@@ -217,7 +233,13 @@ module Forki
       sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.key?("tahoe_sidepane_renderer") }
       video_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("video") }
       feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
-      reaction_counts = extract_reaction_counts(sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+
+      if sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"].key?("cannot_see_top_custom_reactions")
+        reaction_counts = extract_reaction_counts(sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      else # if the video has no reactions, it will have a different structure
+        reaction_counts = extract_reaction_counts(sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]["top_reactions"])
+      end
+
       share_count_object = feedback_object.fetch("share_count", {})
 
       post_details = {
@@ -247,7 +269,12 @@ module Forki
       unless graphql_object.nil? || graphql_object.count == 0
         attachments = graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"]
 
-        reaction_counts = extract_reaction_counts(graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+        if graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"].has_key?("cannot_see_top_custom_reactions")
+          reaction_counts = extract_reaction_counts(graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+        else
+          reaction_counts = extract_reaction_counts(graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["top_reactions"])
+        end
+
         id = graphql_object["node"]["post_id"]
         num_comments = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"]
         reshare_warning = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
@@ -267,7 +294,12 @@ module Forki
 
         poster = creation_story_object["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]
 
-        reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
+        if feedback_object.has_key?("cannot_see_top_custom_reactions")
+          reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
+        else
+          reaction_counts = extract_reaction_counts(feedback_object["top_reactions"])
+        end
+
         id = curr_media_object["currMedia"]["id"],
         num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"],
         num_shares = share_count_object.fetch("count", nil),
@@ -303,7 +335,12 @@ module Forki
                                                             (graphql_string.include?("live_status")) })
       video_permalink = creation_story_object["creation_story"]["shareable"]["url"].delete("\\")
       media_object = video_object["video"]["story"]["attachments"][0]["media"]
-      reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+
+      if creation_story_object["feedback"].key?("cannot_see_top_custom_reactions")
+        reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      else
+        reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["top_reactions"])
+      end
 
       post_details = {
         id: video_object["id"],
@@ -331,7 +368,11 @@ module Forki
                                                        (graphql.include? "creation_story") })["video"]["creation_story"]
       media_object = JSON.parse(graphql_strings.find { |graphql| graphql.include? "playable_url" })["video"]["creation_story"]["attachments"][0]["media"]
       video_permalink = creation_story_object["shareable"]["url"].delete("\\")
-      reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      if creation_story_object["feedback_context"]["feedback_target_with_context"].key?("cannot_see_top_custom_reactions")
+        reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["cannot_see_top_custom_reactions"]["top_reactions"])
+      else
+        reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["top_reactions"])
+      end
 
       post_details = {
         id: creation_story_object["shareable"]["id"],

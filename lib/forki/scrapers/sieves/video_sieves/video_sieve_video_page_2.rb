@@ -1,15 +1,15 @@
-class VideoSieveVideoPage < VideoSieve
+class VideoSieveVideoPage2 < VideoSieve
   # To check if it's valid for the inputted graphql objects
   def self.check(graphql_objects)
     story_node_object = self.extractor(graphql_objects) # This will error out
     return false unless story_node_object["content"]["story"]["attachments"].first["styles"]["attachment"].has_key?("media")
 
     feedback_object = story_node_object["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
-    # This is what differs from video_sieve_video_page_2.rb, where this key is unnested
-    return false unless feedback_object.has_key?("cannot_see_top_custom_reactions")
+    # This is what differs from video_sieve_video_page.rb, where this key is nested further
+    return false unless feedback_object.has_key?("top_reactions")
 
     true
-  rescue StandardError => e
+  rescue StandardError
     false
   end
 
@@ -57,7 +57,7 @@ class VideoSieveVideoPage < VideoSieve
       has_video: true,
       video_preview_image_file: Forki.retrieve_media(video_preview_image_url),
       video_file: Forki.retrieve_media(video_url),
-      reactions: feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
+      reactions: feedback_object["top_reactions"]["edges"]
     }
   end
 

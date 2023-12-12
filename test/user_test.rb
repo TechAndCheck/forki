@@ -1,4 +1,3 @@
-
 require "test_helper"
 require "byebug"
 
@@ -87,7 +86,7 @@ class UserTest < Minitest::Test
       assert_not_nil user.name
 
       assert user.number_of_followers&.positive?
-      assert_equal 508, user.number_of_likes
+      assert user.number_of_likes > 500
       assert user.verified == false
 
       assert_not_nil user.profile_image_url

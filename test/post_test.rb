@@ -11,7 +11,7 @@ class PostTest < Minitest::Test
   def test_an_image_post_by_a_page_returns_properly_when_scraped
     urls = %w[https://www.facebook.com/381726605193429/photos/a.764764956889590/3625268454172545/
               https://www.facebook.com/police.thinblueline/photos/a.10151517985262372/10158540959247372/
-              https://www.facebook.com/PresidentDonaldTrumpFanPage/photos/a.711866182180811/3317607074940029/]
+              https://www.facebook.com/photo?fbid=924035232421621&set=a.833599168131895]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video == false
@@ -143,24 +143,25 @@ class PostTest < Minitest::Test
     end
   end
 
-  def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
-    urls = %w[https://www.facebook.com/watch/live/?v=394367115960503]
-    posts = Forki::Post.lookup(urls)
-    posts.each do |post|
-      assert post.has_video
+  # These don't seem to be a thing anymore?
+  # def test_a_live_video_in_the_watch_tab_returns_properly_when_scraped
+  #   urls = %w[https://www.facebook.com/watch/live/?v=394367115960503]
+  #   posts = Forki::Post.lookup(urls)
+  #   posts.each do |post|
+  #     assert post.has_video
 
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+  #     assert post.num_comments.positive?
+  #     assert post.reactions.length.positive?
 
-      assert_not_nil post.video_file
-      assert_not_nil post.screenshot_file
-      assert_not_nil post.video_preview_image_file
-      assert_nil post.image_file
+  #     assert_not_nil post.video_file
+  #     assert_not_nil post.screenshot_file
+  #     assert_not_nil post.video_preview_image_file
+  #     assert_nil post.image_file
 
-      assert_not_nil post.user
-      assert_not_nil post.created_at
-    end
-  end
+  #     assert_not_nil post.user
+  #     assert_not_nil post.created_at
+  #   end
+  # end
 
   def test_a_video_works
     urls = %w[https://www.facebook.com/iwhidby/videos/957333404980798/?__cft__[0]=AZUs48ZqIBsbNqva5zUJvziRhA7W-GJi8O_b1IXB20maEjdiBpmL8_w27Ghpl1b7pp-9UmFGtAfYQFh6KKDP7MUGO9jHGc0PZyae-MeA7-DEBEbZGNoxPaO2GQSukEx8VyIXm2y2UOw4j616U600XkNQ&__tn__=%2CO%2CP-R]

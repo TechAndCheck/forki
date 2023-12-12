@@ -57,6 +57,12 @@ class VideoSieveWatchTab < VideoSieve
       profile_link = filtered_json["attachments"].first["media"]["creation_story"]["comet_sections"]["title"]["story"]["actors"].first["url"]
     end
 
+    if feedback_object.key?("cannot_see_top_custom_reactions")
+      reactions = feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
+    else
+      reactions = feedback_object["top_reactions"]["edges"]
+    end
+
     post_details = {
       id: video_object.dig("shareable", "id") || video_object["attachments"].first["media"]["id"],
       num_comments: feedback_object["total_comment_count"],
@@ -71,7 +77,7 @@ class VideoSieveWatchTab < VideoSieve
       has_video: true,
       video_preview_image_file: Forki.retrieve_media(video_preview_image_url),
       video_file: Forki.retrieve_media(video_url),
-      reactions: feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
+      reactions: reactions
     }
   end
 
