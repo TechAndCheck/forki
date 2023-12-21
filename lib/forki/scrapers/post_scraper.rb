@@ -65,13 +65,22 @@ module Forki
       graphql_objects.any? do |graphql_object|  # if any GraphQL objects contain the top-level keys above, return true
         return true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
         return true unless graphql_object.fetch("currMedia", nil).nil?
+        return true unless graphql_object.fetch("photo_image", nil).nil?
 
         # This is a complicated form for `web.facebook.com` posts
-
         if !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil?
           if graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].count.positive?
             return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "all_subattachments", "nodes")&.first&.dig("media", "image", "uri").nil?
           end
+        end
+
+        # Another weird format
+        begin
+          if !graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].empty?
+            return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "media", "photo_image", "uri").nil?
+          end
+        rescue StandardError
+
         end
       end
     end
@@ -265,6 +274,7 @@ module Forki
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
       # This is a weird one-off style
+
       graphql_object = graphql_object_array.find { |graphql_object| !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil? }
       unless graphql_object.nil? || graphql_object.count == 0
         attachments = graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"]
@@ -278,13 +288,18 @@ module Forki
         id = graphql_object["node"]["post_id"]
         num_comments = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["share_count"]["count"]
         reshare_warning = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
-        image_url = attachments.first["styles"]["attachment"]["all_subattachments"]["nodes"].first["media"]["image"]["uri"]
+
+        if attachments.first["styles"]["attachment"].key?("all_subattachments")
+          image_url = attachments.first["styles"]["attachment"]["all_subattachments"]["nodes"].first["media"]["image"]["uri"]
+        else
+          image_url = attachments.first["styles"]["attachment"]["media"]["photo_image"]["uri"]
+        end
+
         text = graphql_object["node"]["comet_sections"]["content"]["story"]["message"]["text"]
         profile_link = graphql_object["node"]["comet_sections"]["content"]["story"]["actors"].first["url"]
         created_at = graphql_object["node"]["comet_sections"]["content"]["story"]["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"].first["story"]["creation_time"]
         has_video = false
       else
-
         graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
         curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.key?("currMedia") }
         creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.key?("creation_story") && graphql_object.key?("message") }

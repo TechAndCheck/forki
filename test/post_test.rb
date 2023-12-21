@@ -222,4 +222,8 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/reel/809749953859034").first
     assert_not_nil(post)
   end
+
+  def test_another_link
+    Forki::Post.lookup("https://www.facebook.com/manuelbuffa84/posts/pfbid02uqbifnKoRhW6Z9T1EBNXAnH5uyn9khWjPtfUYZPrLfkdjxtpTqpj521doA6Aa51ol")
+  end
 end
