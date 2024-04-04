@@ -17,9 +17,9 @@ class PostTest < Minitest::Test
       assert post.has_video == false
       assert_nil post.num_views # images do not have views
 
-      assert post.num_shares.positive?
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_shares, :positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.image_file
       assert_not_nil post.screenshot_file
@@ -48,8 +48,8 @@ class PostTest < Minitest::Test
       assert post.has_video
       # assert post.num_views > 0  # live videos may not have views listed
 
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
       assert_not_nil post.video_preview_image_file
@@ -70,9 +70,9 @@ class PostTest < Minitest::Test
       assert post.has_video == false
       assert_nil post.num_views
 
-      assert post.num_shares.positive?
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_shares, :positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.image_file
       assert_not_nil post.screenshot_file
@@ -86,10 +86,10 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup("https://www.facebook.com/Meta/videos/264436895517475")
     posts.each do |post|
       assert post.has_video
-      assert post.num_views.positive?
+      assert_predicate post.num_views, :positive?
 
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
       assert_not_nil post.video_preview_image_file
@@ -109,8 +109,8 @@ class PostTest < Minitest::Test
     posts.each do |post|
       assert post.has_video
 
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
       assert_not_nil post.video_preview_image_file
@@ -128,10 +128,10 @@ class PostTest < Minitest::Test
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
       assert post.has_video
-      assert post.num_views.nil? # Not implemented from Facebook here
+      assert_predicate post.num_views, :nil? # Not implemented from Facebook here
 
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
       assert_not_nil post.video_preview_image_file
@@ -169,8 +169,8 @@ class PostTest < Minitest::Test
     posts.each do |post|
       assert post.has_video
 
-      assert post.num_comments.positive?
-      assert post.reactions.length.positive?
+      assert_predicate post.num_comments, :positive?
+      assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
       assert_not_nil post.screenshot_file
@@ -205,8 +205,8 @@ class PostTest < Minitest::Test
 
     assert_equal false, post.has_video
 
-    assert post.num_comments.positive?
-    assert post.reactions.length.positive?
+    assert_predicate post.num_comments, :positive?
+    assert_predicate post.reactions.length, :positive?
 
     assert_nil post.video_file
     assert_not_nil post.screenshot_file
@@ -223,7 +223,25 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
   end
 
-  def test_another_link
-    Forki::Post.lookup("https://www.facebook.com/manuelbuffa84/posts/pfbid02uqbifnKoRhW6Z9T1EBNXAnH5uyn9khWjPtfUYZPrLfkdjxtpTqpj521doA6Aa51ol")
+  # Not sure why this is here, it's not a link that works
+  # def test_another_link
+  #   Forki::Post.lookup("https://www.facebook.com/manuelbuffa84/posts/pfbid02uqbifnKoRhW6Z9T1EBNXAnH5uyn9khWjPtfUYZPrLfkdjxtpTqpj521doA6Aa51ol")
+  # end
+
+  def test_another_link_2
+    post = Forki::Post.lookup("https://www.facebook.com/bonifacemusavulivh/posts/1800353787146024/").first
+
+    assert post.has_video
+
+    assert_predicate post.num_comments, :positive?
+    assert_predicate post.reactions.length, :positive?
+
+    assert_not_nil post.video_file
+    assert_not_nil post.screenshot_file
+    assert_not_nil post.video_preview_image_file
+    assert_nil post.image_file
+
+    assert_not_nil post.user
+    assert_not_nil post.created_at
   end
 end

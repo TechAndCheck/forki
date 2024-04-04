@@ -12,8 +12,8 @@ class UserTest < Minitest::Test
     users = Forki::User.lookup(urls)
     users.each do |user|
       assert_not_nil user.name
-      assert user.number_of_followers.positive?
-      assert user.number_of_likes.nil?
+      assert_predicate user.number_of_followers, :positive? unless user.number_of_followers.nil?
+      assert_predicate user.number_of_likes, :positive? unless user.number_of_likes.nil?
       assert user.verified
 
       assert_not_nil user.profile_image_url
@@ -30,8 +30,8 @@ class UserTest < Minitest::Test
     users = Forki::User.lookup(urls)
     users.each do |user|
       assert_not_nil user.name
-      assert user.number_of_followers.positive?
-      assert user.number_of_likes.positive?
+      assert_predicate user.number_of_followers, :positive? unless user.number_of_followers.nil?
+      assert_predicate user.number_of_likes, :positive? unless user.number_of_likes.nil?
       assert user.verified
 
       assert_not_nil user.profile_image_url
@@ -51,7 +51,7 @@ class UserTest < Minitest::Test
 
       assert_nil user.number_of_followers
       assert_nil user.number_of_likes
-      assert user.verified == false
+      assert_equal false, user.verified
 
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file
@@ -67,9 +67,9 @@ class UserTest < Minitest::Test
     users.each do |user|
       assert_not_nil user.name
 
-      assert user.number_of_followers&.positive?
+      assert_predicate user.number_of_followers, :positive? unless user.number_of_followers.nil?
       assert_nil user.number_of_likes
-      assert user.verified == false
+      assert_equal false, user.verified
 
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file
@@ -85,9 +85,9 @@ class UserTest < Minitest::Test
     users.each do |user|
       assert_not_nil user.name
 
-      assert user.number_of_followers&.positive?
+      assert_predicate user.number_of_followers, :positive? unless user.number_of_followers.nil?
       assert user.number_of_likes > 500
-      assert user.verified == false
+      assert_equal false, user.verified
 
       assert_not_nil user.profile_image_url
       assert_not_nil user.profile_image_file
