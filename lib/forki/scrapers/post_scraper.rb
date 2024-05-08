@@ -71,6 +71,9 @@ module Forki
         if !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil?
           if graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].count.positive?
             return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "all_subattachments", "nodes")&.first&.dig("media", "image", "uri").nil?
+
+            # Another version I guess
+            return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "media", "large_share_image")&.dig("uri").nil?
           end
         end
 
@@ -318,7 +321,6 @@ module Forki
           feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
         end
 
-
         if feedback_object.has_key?("cannot_see_top_custom_reactions")
           reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
         else
@@ -326,18 +328,28 @@ module Forki
         end
 
         id = graphql_object["node"]["post_id"]
-        num_comments = feedback_object["share_count"]["count"]
+        num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["comment_rendering_instance"]["comments"]["total_count"]
         reshare_warning = feedback_object["should_show_reshare_warning"]
 
         if attachments.first["styles"]["attachment"].key?("all_subattachments")
           image_url = attachments.first["styles"]["attachment"]["all_subattachments"]["nodes"].first["media"]["image"]["uri"]
         else
-          image_url = attachments.first["styles"]["attachment"]["media"]["photo_image"]["uri"]
+          image_url = attachments.first.dig("styles", "attachment", "media", "photo_image", "uri")
+
+          if image_url.nil?
+            image_url = attachments.first["styles"]["attachment"]["media"]["large_share_image"]["uri"]
+          end
         end
 
         text = graphql_object["node"]["comet_sections"]["content"]["story"]["message"]["text"]
         profile_link = graphql_object["node"]["comet_sections"]["content"]["story"]["actors"].first["url"]
-        created_at = graphql_object["node"]["comet_sections"]["content"]["story"]["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"].first["story"]["creation_time"]
+
+        unless graphql_object["node"]["comet_sections"].dig("content", "story", "comet_sections", "context_layout", "story", "comet_sections", "metadata").nil?
+          created_at = graphql_object["node"]["comet_sections"].dig("content", "story", "comet_sections", "context_layout", "story", "comet_sections", "metadata")&.first["story"]["creation_time"]
+        else
+          created_at = graphql_object["node"]["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"].first["story"]["creation_time"]
+        end
+
         has_video = false
       else
         graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }

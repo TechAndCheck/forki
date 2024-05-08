@@ -4,7 +4,6 @@ class ImageSieve
   end
 
   def self.sieve_for_graphql_objects(graphql_objects)
-
     sieve = sieve_class_for_graphql_objects(graphql_objects)
     return nil if sieve.nil?
 
@@ -19,7 +18,6 @@ private
   end
 end
 
-
-Dir['./lib/forki/scrapers/sieves/image_sieves/*.rb'].each do |file|
+Dir["./lib/forki/scrapers/sieves/image_sieves/*.rb"].each do |file|
   require file unless file.end_with?("image_sieve.rb")
 end
