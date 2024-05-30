@@ -53,6 +53,8 @@ module Forki
   # Extract the file extension from a media URL
   # E.g. ".png" from https://scontent-atl3-2.xx.fbcdn.net/v/t39.30808-1.png?stp=dst-png_p148x148
   def self.extract_file_extension_from_url(url)
+    return nil if url.nil?
+
     stripped_url = url.split("?").first  # remove URL query params
     extension = stripped_url.split(".").last
 

@@ -37,7 +37,9 @@ module Forki
       elsif post_has_image
         extract_image_post_data(graphql_objects)
       else
-        raise UnhandledContentError
+        extract_image_post_data(graphql_objects)
+
+        #raise UnhandledContentError
       end
     end
 
@@ -331,13 +333,13 @@ module Forki
         num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["comment_rendering_instance"]["comments"]["total_count"]
         reshare_warning = feedback_object["should_show_reshare_warning"]
 
-        if attachments.first["styles"]["attachment"].key?("all_subattachments")
+        if attachments.count.positive? && attachments.first["styles"]["attachment"]&.key?("all_subattachments")
           image_url = attachments.first["styles"]["attachment"]["all_subattachments"]["nodes"].first["media"]["image"]["uri"]
         else
-          image_url = attachments.first.dig("styles", "attachment", "media", "photo_image", "uri")
+          image_url = attachments.first&.dig("styles", "attachment", "media", "photo_image", "uri")
 
           if image_url.nil?
-            image_url = attachments.first["styles"]["attachment"]["media"]["large_share_image"]["uri"]
+            image_url = attachments.first&.dig("styles", "attachment", "media", "large_share_image", "uri")
           end
         end
 
@@ -502,6 +504,7 @@ module Forki
       graphql_strings = find_graphql_data_strings(page.html)
 
       post_data = extract_post_data(graphql_strings)
+
       post_data[:url] = url
       user_url = post_data[:profile_link]
 
