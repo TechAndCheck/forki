@@ -41,8 +41,12 @@ class VideoSieveWatchTab < VideoSieve
   def self.sieve(graphql_objects)
     video_object = self.extractor(graphql_objects)
 
-    video_url = video_object["attachments"].first["media"]["browser_native_sd_url"]
-    video_preview_image_url = video_object["attachments"].first["media"]["preferred_thumbnail"]["image"]["uri"]
+    # video_url = video_object["attachments"].first["media"]["browser_native_sd_url"]
+    video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_hd_url"]
+    video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_sd_url"] if video_url.nil?
+
+    # video_preview_image_url = video_object["attachments"].first["media"]["preferred_thumbnail"]["image"]["uri"]
+    video_preview_image_url = video_object["short_form_video_context"]["video"]["first_frame_thumbnail"]
 
     if !video_object["feedback_context"].nil?
       feedback_object = video_object["feedback_context"]["feedback_target_with_context"]
@@ -51,16 +55,25 @@ class VideoSieveWatchTab < VideoSieve
       feedback_object = feedback_object["feedback"] if feedback_object.has_key?("feedback")
     end
 
-    profile_link = video_object["attachments"].first["media"]["owner"]["url"]
+    begin
+      profile_link = video_object["attachments"].first["media"]["owner"]["url"]
+    rescue StandardError => e
+      profile_link = video_object["short_form_video_context"]["video_owner"]["url"]
+    end
+
     if profile_link.nil?
       filtered_json = graphql_objects.find { |go| go.has_key? "attachments" }
       profile_link = filtered_json["attachments"].first["media"]["creation_story"]["comet_sections"]["title"]["story"]["actors"].first["url"]
     end
 
-    if feedback_object.key?("cannot_see_top_custom_reactions")
-      reactions = feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
-    else
-      reactions = feedback_object["top_reactions"]["edges"]
+    begin
+      if feedback_object.key?("cannot_see_top_custom_reactions")
+        reactions = feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
+      else
+        reactions = feedback_object["top_reactions"]["edges"]
+      end
+    rescue StandardError => e
+      reactions = feedback_object["unified_reactors"]["count"]
     end
 
     post_details = {

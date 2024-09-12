@@ -254,4 +254,8 @@ class PostTest < Minitest::Test
     assert !post.first.text.empty?
     assert_predicate post.first.text.length, :positive?
   end
+
+  def test_an_alternative_reel
+    Forki::Post.lookup("https://www.facebook.com/reel/2841887882618164")
+  end
 end

@@ -204,7 +204,11 @@ module Forki
       begin
         feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
       rescue NoMethodError
-        feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["comet_feed_ufi_container"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]
+        begin
+          feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["comet_feed_ufi_container"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]
+        rescue NoMethodError
+          feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]
+        end
       end
 
       if feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"].key?("cannot_see_top_custom_reactions")
@@ -315,8 +319,14 @@ module Forki
         # TODO: These two branches are *super* similar, probably a lot of overlap
         attachments = graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"]
 
-        if graphql_object["node"]["comet_sections"]["feedback"]["story"].key?("feedback_context")
-          feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+        if graphql_object["node"]["comet_sections"]["feedback"]["story"].has_key?("story_ufi_container")
+          feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+        elsif graphql_object["node"]["comet_sections"]["feedback"]["story"].dig("feedback_context")
+          begin
+            feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+          rescue NoMethodError
+            debugger
+          end
         elsif graphql_object["node"]["comet_sections"]["feedback"]["story"].has_key?("comet_feed_ufi_container")
           feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["comet_feed_ufi_container"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
         else
