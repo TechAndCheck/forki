@@ -41,12 +41,15 @@ class VideoSieveWatchTab < VideoSieve
   def self.sieve(graphql_objects)
     video_object = self.extractor(graphql_objects)
 
-    # video_url = video_object["attachments"].first["media"]["browser_native_sd_url"]
-    video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_hd_url"]
-    video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_sd_url"] if video_url.nil?
+    video_url = video_object["attachments"]&.first.dig("media", "browser_native_sd_url")
 
-    # video_preview_image_url = video_object["attachments"].first["media"]["preferred_thumbnail"]["image"]["uri"]
-    video_preview_image_url = video_object["short_form_video_context"]["video"]["first_frame_thumbnail"]
+    video_url = video_object.dig("short_form_video_context", "playback_video", "browser_native_hd_url") if video_url.nil?
+    video_url = video_object.dig("short_form_video_context", "playback_video", "browser_native_sd_url") if video_url.nil?
+
+    debugger if video_url.nil?
+
+    video_preview_image_url = video_object["attachments"]&.first.dig("media", "preferred_thumbnail", "image", "uri")
+    video_preview_image_url = video_object["short_form_video_context"]["video"]["first_frame_thumbnail"] if video_preview_image_url.nil?
 
     if !video_object["feedback_context"].nil?
       feedback_object = video_object["feedback_context"]["feedback_target_with_context"]
