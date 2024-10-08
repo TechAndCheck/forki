@@ -505,7 +505,11 @@ module Forki
         # Do nothing if element not found
       end
 
-      save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+      begin
+        save_screenshot("#{Forki.temp_storage_location}/facebook_screenshot_#{SecureRandom.uuid}.png")
+      rescue Selenium::WebDriver::Error::TimeoutError
+        raise Net::ReadTimeout
+      end
     end
 
     # Uses GraphQL data and DOM elements to collect information about the current post
@@ -536,14 +540,20 @@ module Forki
     rescue Net::ReadTimeout => e
       puts "Time out error: #{e}"
       puts e.backtrace
+      raise Forki::RetryableError # This insures it'll eventually be retried by Hypatia
     rescue StandardError => e
       raise e
+      raise Forki::RetryableError
     ensure
       # `page` here can be broken already. In which case we want to raise an error so it's retried later
       begin
         page.quit
       rescue Curl::Err::ConnectionFailedError
-        raise Forki::RretryableError # This insures it'll eventually be retried by Hypatia
+        raise Forki::RetryableError # This insures it'll eventually be retried by Hypatia
+      rescue StandardError => e
+        puts "Error closing browser: #{e}"
+        raise e
+        # raise Forki::RetryableError
       end
     end
   end
