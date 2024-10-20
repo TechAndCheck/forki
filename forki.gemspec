@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "typhoeus" # For making API requests
   spec.add_dependency "oj" # A faster JSON parser/loader than stdlib
   spec.add_dependency "selenium-webdriver" # Webdriver selenium
+  spec.add_dependency "zorki" # For scraping instagram pages
 
   spec.add_development_dependency "thor" # For the generator
 

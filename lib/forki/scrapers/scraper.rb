@@ -178,10 +178,10 @@ module Forki
     # If either of those two conditions are false, raises an exception
     def validate_and_load_page(url)
       Capybara.app_host = "https://www.facebook.com"
-      facebook_hosts = ["facebook.com", "www.facebook.com", "web.facebook.com", "m.facebook.com"]
+      facebook_hosts = ["facebook.com", "www.facebook.com", "web.facebook.com", "m.facebook.com", "l.facebook.com"]
       parsed_url = URI.parse(url)
       host = parsed_url.host
-      raise Forki::InvalidUrlError unless facebook_hosts.include?(host)
+      raise Forki::InvalidUrlError.new("Invalid Facebook host: #{host}") unless facebook_hosts.include?(host)
 
       # Replace the host with a default one to prevent redirect loops that can happen
       unless parsed_url.host == "www.facebook.com"

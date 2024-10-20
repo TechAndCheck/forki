@@ -37,7 +37,7 @@ module Forki
           def scrape(urls)
             urls.map do |url|
               user_hash = Forki::UserScraper.new.parse(url)
-              User.new(user_hash)
+              User.new(user_hash) if user_hash.is_a?(Hash)
             end
           end
       end

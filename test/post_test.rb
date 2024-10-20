@@ -223,6 +223,11 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
   end
 
+  def test_reel_other_format
+    post = Forki::Post.lookup("https://www.facebook.com/share/r/jh5LX4CNhPXxn83F/").first
+    assert_not_nil(post)
+  end
+
   # Not sure why this is here, it's not a link that works
   # def test_another_link
   #   Forki::Post.lookup("https://www.facebook.com/manuelbuffa84/posts/pfbid02uqbifnKoRhW6Z9T1EBNXAnH5uyn9khWjPtfUYZPrLfkdjxtpTqpj521doA6Aa51ol")
@@ -257,5 +262,9 @@ class PostTest < Minitest::Test
 
   def test_an_alternative_reel
     Forki::Post.lookup("https://www.facebook.com/reel/2841887882618164")
+  end
+
+  def test_a_url_that_seems_to_fail
+    Forki::Post.lookup("https://www.facebook.com/mydefiguru/posts/2857725071050020/")
   end
 end

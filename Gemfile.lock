@@ -1,12 +1,13 @@
 PATH
   remote: .
   specs:
-    forki (0.2.8)
+    forki (0.2.11)
       apparition
       capybara
       oj
       selenium-webdriver
       typhoeus
+      zorki
 
 GEM
   remote: https://rubygems.org/
@@ -29,8 +30,8 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
-    addressable (2.8.6)
-      public_suffix (>= 2.0.2, < 6.0)
+    addressable (2.8.7)
+      public_suffix (>= 2.0.2, < 7.0)
     apparition (0.6.0)
       capybara (~> 3.13, < 4)
       websocket-driver (>= 0.6.5)
@@ -59,6 +60,7 @@ GEM
     i18n (1.13.0)
       concurrent-ruby (~> 1.0)
     json (2.6.3)
+    logger (1.6.1)
     loofah (2.21.3)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
@@ -68,12 +70,14 @@ GEM
     minitest (5.18.0)
     nokogiri (1.15.1-arm64-darwin)
       racc (~> 1.4)
-    oj (3.16.4)
+    oj (3.16.6)
       bigdecimal (>= 3.0)
+      ostruct (>= 0.2)
+    ostruct (0.6.0)
     parallel (1.23.0)
     parser (3.2.2.1)
       ast (~> 2.4.1)
-    public_suffix (5.1.1)
+    public_suffix (6.0.1)
     racc (1.6.2)
     rack (2.2.4)
     rack-test (2.1.0)
@@ -130,8 +134,11 @@ GEM
       rubocop-rails (~> 2.0)
     ruby-progressbar (1.13.0)
     rubyzip (2.3.2)
-    selenium-webdriver (4.21.1)
+    selenium-devtools (0.129.0)
+      selenium-webdriver (~> 4.2)
+    selenium-webdriver (4.24.0)
       base64 (~> 0.2)
+      logger (~> 1.4)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
@@ -141,13 +148,20 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
-    websocket (1.2.10)
+    websocket (1.2.11)
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.6.8)
+    zorki (0.2.6)
+      apparition
+      capybara
+      oj
+      selenium-devtools
+      selenium-webdriver (~> 4.24.0)
+      typhoeus
 
 PLATFORMS
   arm64-darwin-21

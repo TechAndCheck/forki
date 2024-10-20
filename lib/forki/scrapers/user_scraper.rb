@@ -1,10 +1,12 @@
 require "typhoeus"
+require "zorki"
 
+# rubocop:disable Metrics/ClassLength
 module Forki
   class UserScraper < Scraper
     # Finds and returns the number of people who like the current page
     def find_number_of_likes(profile_details_string)
-      likes_pattern = /[0-9,.KM ] likes/
+      # likes_pattern = /[0-9,.KM ] likes/
       likes_pattern = /(?<num_likes>[0-9,.KM ]+) (l|L)ikes/
       number_of_likes_match = likes_pattern.match(profile_details_string)
 
@@ -100,7 +102,14 @@ module Forki
 
     # Uses GraphQL data and DOM elements to collect information about the current user page
     def parse(url)
+      # So some reels may actually link to an instagram user?
+      if url.include?("instagram.com")
+        user = get_instagram_user(url)
+        return user
+      end
+
       validate_and_load_page(url)
+
       graphql_strings = find_graphql_data_strings(page.html)
       is_page = graphql_strings.map { |s| JSON.parse(s) }.any? { |o| o.key?("page") }
       user_details = is_page ? extract_page_details(graphql_strings) : extract_profile_details(graphql_strings)
@@ -109,6 +118,39 @@ module Forki
       user_details[:profile_link] = url
 
       user_details
+    end
+
+    def get_instagram_user(url)
+      uri = URI(url)
+      query = uri.query
+      components = URI.decode_uri_component(query)
+      extracted_url = URI.extract(components).first
+      extracted_uri = URI(extracted_url)
+      username = extracted_uri.to_s.match(/(https:\/\/www.instagram.com\/_u\/[\w]+)/).to_s.split("/").last
+
+      page.quit # I think we need to do this so Zorki can run?
+      zorki_users = Zorki::User.lookup(username)
+      zorki_user = nil
+
+      if zorki_users.count.positive?
+        zorki_user = zorki_users.first
+      else
+        raise ContentUnavailableError
+      end
+
+
+      # Convert a zorki_user into a hash for Forki
+      {
+        name: zorki_user.name,
+        id: username,
+        number_of_followers: zorki_user.number_of_followers,
+        verified: zorki_user.verified,
+        profile: zorki_user.profile,
+        profile_link: zorki_user.profile_link,
+        profile_image_file: zorki_user.profile_image,
+        profile_image_url: zorki_user.profile_image_url,
+        number_of_likes: 0
+      }
     end
   end
 end
