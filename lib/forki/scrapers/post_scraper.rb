@@ -288,7 +288,7 @@ module Forki
         num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"]
       end
 
-      text = sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["message"].dig(["story", "message", "text"])
+      text = sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"].dig(["message", "story", "message", "text"])
       text = "" if text.nil?
 
       post_details = {
