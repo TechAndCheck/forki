@@ -288,6 +288,9 @@ module Forki
         num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"]
       end
 
+      text = sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["message"].dig(["story", "message", "text"])
+      text = "" if text.nil?
+
       post_details = {
         id: video_object["id"],
         num_comments: num_comments,
@@ -296,7 +299,7 @@ module Forki
         reshare_warning: feedback_object["should_show_reshare_warning"],
         video_preview_image_url: video_object["video"]["preferred_thumbnail"]["image"]["uri"],
         video_url: video_object["video"]["playable_url_quality_hd"] || video_object["video"]["browser_native_hd_url"] || video_object["video"]["browser_native_sd_url"] || video_object["video"]["playable_url"],
-        text: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["message"]["story"]["message"]["text"],
+        text: text,
         created_at: video_object["video"]["publish_time"],
         profile_link: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true

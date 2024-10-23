@@ -275,4 +275,8 @@ class PostTest < Minitest::Test
   def test_a_url_that_seems_to_fail_3
     Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
   end
+
+  def test_a_video_without_text_works
+    Forki::Post.lookup("https://www.facebook.com/100000568872011/videos/2240868886282175")
+  end
 end
