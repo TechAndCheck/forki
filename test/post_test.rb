@@ -267,4 +267,12 @@ class PostTest < Minitest::Test
   def test_a_url_that_seems_to_fail
     Forki::Post.lookup("https://www.facebook.com/mydefiguru/posts/2857725071050020/")
   end
+
+  def test_a_url_that_seems_to_fail_2
+    Forki::Post.lookup("https://www.facebook.com/DonaldTrump/posts/pfbid09yccynLeptpTGdCzWnfGAqN6RH1eUg6WYo4jAekcvqvDJ4zrv4mFmkHoFB8cKed5l")
+  end
+
+  def test_a_url_that_seems_to_fail_3
+    Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
+  end
 end
