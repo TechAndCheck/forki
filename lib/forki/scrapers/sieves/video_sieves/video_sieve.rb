@@ -4,7 +4,6 @@ class VideoSieve
   end
 
   def self.sieve_for_graphql_objects(graphql_objects)
-
     sieve = sieve_class_for_graphql_objects(graphql_objects)
     return nil if sieve.nil?
 
@@ -19,6 +18,6 @@ private
   end
 end
 
-Dir[File.join(__dir__, '*.rb')].each do |file|
+Dir[File.join(__dir__, "*.rb")].each do |file|
   require file unless file.end_with?("video_sieve.rb")
 end

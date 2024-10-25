@@ -15,7 +15,7 @@ class VideoSieveReel < VideoSieve
 
     true
   rescue StandardError
-    return false
+    false
   end
 
   # output the expected format of:
@@ -56,7 +56,7 @@ class VideoSieveReel < VideoSieve
     video_preview_image_url = video_object["short_form_video_context"]["playback_video"]["preferred_thumbnail"]["image"]["uri"]
     video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_hd_url"] || video_object["short_form_video_context"]["playback_video"]["browser_native_sd_url"]
 
-    post_details = {
+    {
       id: video_object["short_form_video_context"]["video"]["id"],
       num_comments: feedback_object["feedback"]["top_level_comments"]["totalCountIncludingReplies"],
       num_shared: Forki::Scraper.extract_int_from_num_element(feedback_object["feedback"]["share_count_reduced"]),
@@ -74,7 +74,7 @@ class VideoSieveReel < VideoSieve
     }
   end
 
-  private
+private
 
   def self.extractor(graphql_objects)
     video_objects = graphql_objects.filter do |go|

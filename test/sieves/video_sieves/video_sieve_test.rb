@@ -10,6 +10,6 @@ class PostTest < Minitest::Test
   end
 
   def test_sieve_can_sieve_properly
-    result = VideoSieve.sieve_for_graphql_objects(@valid_json)
+    VideoSieve.sieve_for_graphql_objects(@valid_json)
   end
 end

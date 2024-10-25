@@ -7,7 +7,6 @@ gemspec
 
 gem "rake", "~> 13.0"
 
-gem "minitest", "~> 5.0"
 
 gem "rubocop", "~> 1.7"
 
@@ -21,3 +20,5 @@ gem "byebug"
 gem "rack", "2.2.4"
 
 gem "curb", "~> 1.0", ">= 1.0.5"
+
+gem "minitest", "~> 5.25"

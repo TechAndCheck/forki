@@ -14,7 +14,7 @@ class VideoSieveReel2 < VideoSieve
 
     true
   rescue StandardError
-    return false
+    false
   end
 
   # output the expected format of:
@@ -39,7 +39,6 @@ class VideoSieveReel2 < VideoSieve
   def self.sieve(graphql_objects)
     video_object = self.extractor(graphql_objects)
 
-
     feedback_object = graphql_objects.filter do |go|
       go = go.first if go.kind_of?(Array) && !go.empty?
       !go.dig("feedback", "total_comment_count").nil?
@@ -55,7 +54,12 @@ class VideoSieveReel2 < VideoSieve
     video_preview_image_url = video_object["short_form_video_context"]["playback_video"]["preferred_thumbnail"]["image"]["uri"]
     video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_hd_url"] || video_object["short_form_video_context"]["playback_video"]["browser_native_sd_url"]
 
-    post_details = {
+    if video_url.nil? && video_object["short_form_video_context"]["playback_video"].has_key?("videoDeliveryLegacyFields")
+      video_url = video_object["short_form_video_context"]["playback_video"]["videoDeliveryLegacyFields"]["browser_native_hd_url"]
+      video_url = video_object["short_form_video_context"]["playback_video"]["videoDeliveryLegacyFields"]["browser_native_sd_url"] if video_url.nil?
+    end
+
+    {
       id: video_object["short_form_video_context"]["video"]["id"],
       num_comments: feedback_object["feedback"]["total_comment_count"],
       num_shared: Forki::Scraper.extract_int_from_num_element(feedback_object["feedback"]["share_count_reduced"]),
@@ -71,11 +75,9 @@ class VideoSieveReel2 < VideoSieve
       video_file: Forki.retrieve_media(video_url),
       reactions: nil # Only available on comments it seems? Look into this again sometime
     }
-  rescue StandardError => e
-    debugger
   end
 
-  private
+private
 
   def self.extractor(graphql_objects)
     video_objects = graphql_objects.filter do |go|

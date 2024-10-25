@@ -23,6 +23,7 @@ module Forki
       raise ContentUnavailableError unless is_post_available?
 
       graphql_objects = get_graphql_objects(graphql_strings)
+      post_is_text_only = check_if_post_is_text_only(graphql_objects)
       post_has_video = check_if_post_is_video(graphql_objects)
       post_has_image = check_if_post_is_image(graphql_objects)
 
@@ -30,7 +31,9 @@ module Forki
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
       post_has_video_in_comment_stream = check_if_post_is_in_comment_stream(graphql_objects) if post_has_video == false
 
-      if post_has_video
+      if post_is_text_only
+        extract_text_post_data(graphql_objects)
+      elsif post_has_video
         extract_video_post_data(graphql_strings)
       elsif post_has_video_in_comment_stream
         extract_video_comment_post_data(graphql_objects)
@@ -43,6 +46,21 @@ module Forki
 
     def get_graphql_objects(graphql_strings)
       graphql_strings.map { |graphql_object| JSON.parse(graphql_object) }
+    end
+
+    def check_if_post_is_text_only(graphql_objects)
+      graphql_object = graphql_objects.find do |graphql_object|
+        # next unless graphql_object.key?("nodes")
+        next if graphql_object.dig("node", "comet_sections", "content", "story", "comet_sections", "message", "story", "is_text_only_story").nil?
+        # next unless graphql_object.to_s.include?("is_text_only_story")
+        # graphql_nodes = graphql_object["nodes"]
+        graphql_object.dig("node", "comet_sections", "content", "story", "comet_sections", "message", "story", "is_text_only_story")
+      end
+
+      return false if graphql_object.nil?
+
+      return true if graphql_object.dig("node", "comet_sections", "content", "story", "comet_sections", "message", "story", "is_text_only_story")
+      false
     end
 
     def check_if_post_is_video(graphql_objects)
@@ -124,6 +142,67 @@ module Forki
       false
     end
 
+    def extract_text_post_data(graphql_objects)
+      graphql_object = graphql_objects.find do |graphql_object|
+        next if graphql_object.dig("node", "comet_sections", "content", "story", "comet_sections", "message", "story", "is_text_only_story").nil?
+        graphql_object
+      end
+
+      unless graphql_object.nil? || graphql_object.count.zero?
+        if graphql_object["node"]["comet_sections"]["feedback"]["story"].has_key?("story_ufi_container")
+          feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+        elsif graphql_object["node"]["comet_sections"]["feedback"]["story"].dig("feedback_context")
+          begin
+            feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+          rescue NoMethodError; end
+        elsif graphql_object["node"]["comet_sections"]["feedback"]["story"].has_key?("comet_feed_ufi_container")
+          feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["comet_feed_ufi_container"]["story"]["story_ufi_container"]["story"]["feedback_context"]["feedback_target_with_context"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+        else
+          feedback_object = graphql_object["node"]["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
+        end
+
+        if feedback_object.has_key?("cannot_see_top_custom_reactions")
+          reaction_counts = extract_reaction_counts(feedback_object["cannot_see_top_custom_reactions"]["top_reactions"])
+        else
+          reaction_counts = extract_reaction_counts(feedback_object["top_reactions"])
+        end
+
+        id = graphql_object["node"]["post_id"]
+        num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["comment_rendering_instance"]["comments"]["total_count"]
+        reshare_warning = feedback_object["should_show_reshare_warning"]
+        share_count_object = feedback_object.fetch("share_count", {})
+        num_shares = share_count_object.fetch("count", nil)
+
+        text = graphql_object["node"]["comet_sections"]["content"]["story"].dig("message", "text")
+        text = "" if text.nil?
+
+        profile_link = graphql_object["node"]["comet_sections"]["content"]["story"]["actors"].first["url"]
+
+        unless graphql_object["node"]["comet_sections"].dig("content", "story", "comet_sections", "context_layout", "story", "comet_sections", "metadata").nil?
+          created_at = graphql_object["node"]["comet_sections"].dig("content", "story", "comet_sections", "context_layout", "story", "comet_sections", "metadata")&.first["story"]["creation_time"]
+        else
+          created_at = graphql_object["node"]["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"].first["story"]["creation_time"]
+        end
+
+        has_video = false
+      end
+
+      post_details = {
+        id: id,
+        num_comments: num_comments,
+        num_shares: num_shares,
+        reshare_warning: reshare_warning,
+        image_url: nil,
+        text: text,
+        profile_link: profile_link,
+        created_at: created_at,
+        has_video: has_video
+      }
+      post_details[:image_file] = []
+      post_details[:reactions] = reaction_counts
+      post_details
+    end
+
     def extract_video_comment_post_data(graphql_objects)
       graphql_nodes = nil
       graphql_objects.find do |graphql_object|
@@ -185,7 +264,7 @@ module Forki
         media_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]
         if media_object.has_key?("video")
           video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]["video"]
-        elsif media_object.has_key?("media") && media_object["media"].has_key?("browser_native_sd_url")
+        elsif media_object.has_key?("media") && (media_object["media"].has_key?("browser_native_sd_url") || media_object["media"].has_key?("videoDeliveryLegacyFields"))
           video_object = media_object["media"]
         end
 
@@ -250,6 +329,12 @@ module Forki
         reshare_warning = feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
       end
 
+      if !video_object.key?("browser_native_hd_url") && !video_object.key?("browser_native_sd_url") && video_object.key?("videoDeliveryLegacyFields")
+        video_url = video_object["videoDeliveryLegacyFields"]["browser_native_hd_url"] || video_object["videoDeliveryLegacyFields"]["browser_native_sd_url"]
+      else
+        video_url = video_object["browser_native_hd_url"] || video_object["browser_native_sd_url"]
+      end
+
       post_details = {
         id: video_object["id"],
         num_comments: num_comments,
@@ -257,7 +342,7 @@ module Forki
         num_views: view_count,
         reshare_warning: reshare_warning,
         video_preview_image_url: video_object["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_object["browser_native_hd_url"] || video_object["browser_native_sd_url"],
+        video_url: video_url,
         text: text,
         created_at: creation_date,
         profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
@@ -272,6 +357,9 @@ module Forki
     def extract_video_post_data_alternative(graphql_object_array)
       sidepane_object = graphql_object_array.find { |graphql_object| graphql_object.key?("tahoe_sidepane_renderer") }
       video_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("video") }
+
+      raise Forki::ContentUnavailableError if sidepane_object.nil? && video_object.nil?
+
       feedback_object = sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"]
 
       if sidepane_object["tahoe_sidepane_renderer"]["video"]["feedback"].key?("cannot_see_top_custom_reactions")
@@ -288,8 +376,13 @@ module Forki
         num_comments = feedback_object["comments_count_summary_renderer"]["feedback"]["total_comment_count"]
       end
 
-      text = sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"].dig(["message", "story", "message", "text"])
+      text = sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"].dig("message", "story", "message", "text")
       text = "" if text.nil?
+
+      video_url = video_object["video"]["playable_url_quality_hd"] || video_object["video"]["browser_native_hd_url"] || video_object["video"]["browser_native_sd_url"] || video_object["video"]["playable_url"]
+      if video_url.nil? && video_object["video"].key?("videoDeliveryLegacyFields")
+        video_url = video_object["video"]["videoDeliveryLegacyFields"]["browser_native_hd_url"] || video_object["video"]["videoDeliveryLegacyFields"]["browser_native_sd_url"]
+      end
 
       post_details = {
         id: video_object["id"],
@@ -298,7 +391,7 @@ module Forki
         num_views: feedback_object["video_view_count"],
         reshare_warning: feedback_object["should_show_reshare_warning"],
         video_preview_image_url: video_object["video"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_object["video"]["playable_url_quality_hd"] || video_object["video"]["browser_native_hd_url"] || video_object["video"]["browser_native_sd_url"] || video_object["video"]["playable_url"],
+        video_url: video_url,
         text: text,
         created_at: video_object["video"]["publish_time"],
         profile_link: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
@@ -314,7 +407,6 @@ module Forki
     # Extracts data from an image post by parsing GraphQL strings as seen in the video post scraper above
     def extract_image_post_data(graphql_object_array)
       # This is a weird one-off style
-
       graphql_object = graphql_object_array.find { |graphql_object| !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil? }
       unless graphql_object.nil? || graphql_object.count.zero?
         # TODO: These two branches are *super* similar, probably a lot of overlap
@@ -352,7 +444,7 @@ module Forki
           end
         end
 
-        text = graphql_object["node"]["comet_sections"]["content"]["story"].dig(["message", "text"])
+        text = graphql_object["node"]["comet_sections"]["content"]["story"].dig("message", "text")
         text = "" if text.nil?
 
         profile_link = graphql_object["node"]["comet_sections"]["content"]["story"]["actors"].first["url"]
@@ -367,6 +459,8 @@ module Forki
       else
         graphql_object_array.find { |graphql_object| graphql_object.key?("viewer_actor") && graphql_object.key?("display_comments") }
         curr_media_object = graphql_object_array.find { |graphql_object| graphql_object.key?("currMedia") }
+        raise Forki::ContentUnavailableError if curr_media_object.nil?
+
         creation_story_object = graphql_object_array.find { |graphql_object| graphql_object.key?("creation_story") && graphql_object.key?("message") }
 
         feedback_object = graphql_object_array.find { |graphql_object| graphql_object.has_key?("comet_ufi_summary_and_actions_renderer") }["comet_ufi_summary_and_actions_renderer"]["feedback"]

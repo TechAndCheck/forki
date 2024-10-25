@@ -61,7 +61,7 @@ class VideoSieveVideoPage2 < VideoSieve
     }
   end
 
-  private
+private
 
   def self.extractor(graphql_objects)
     story_node_object = graphql_objects.find { |graphql_object| graphql_object.key? "node" }&.fetch("node", nil) # user posted video

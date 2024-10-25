@@ -22,6 +22,8 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.image_file
+      assert File.size(post.image_file) > 1000
+
       assert_not_nil post.screenshot_file
       assert_nil post.video_file
 
@@ -52,7 +54,11 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
+      assert File.size(post.video_file) > 1000
+
       assert_not_nil post.video_preview_image_file
+      assert File.size(post.video_preview_image_file) > 1000
+
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
 
@@ -75,6 +81,8 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.image_file
+      assert File.size(post.image_file) > 1000
+
       assert_not_nil post.screenshot_file
 
       assert_not_nil post.user
@@ -92,7 +100,11 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
+      assert File.size(post.video_file) > 1000
+
       assert_not_nil post.video_preview_image_file
+      assert File.size(post.video_preview_image_file) > 1000
+
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
 
@@ -113,7 +125,11 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
+      assert File.size(post.video_file) > 1000
+
       assert_not_nil post.video_preview_image_file
+      assert File.size(post.video_preview_image_file) > 1000
+
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
 
@@ -134,7 +150,11 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
+      assert File.size(post.video_file) > 1000
+
       assert_not_nil post.video_preview_image_file
+      assert File.size(post.video_preview_image_file) > 1000
+
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
 
@@ -173,8 +193,12 @@ class PostTest < Minitest::Test
       assert_predicate post.reactions.length, :positive?
 
       assert_not_nil post.video_file
+      assert File.size(post.video_file) > 1000
+
       assert_not_nil post.screenshot_file
       assert_not_nil post.video_preview_image_file
+      assert File.size(post.video_preview_image_file) > 1000
+
       assert_nil post.image_file
 
       assert_not_nil post.user
@@ -212,6 +236,8 @@ class PostTest < Minitest::Test
     assert_not_nil post.screenshot_file
     assert_nil post.video_preview_image_file
     assert_not_nil post.image_file
+    assert File.size(post.image_file) > 1000
+
 
     assert_not_nil post.user
     assert_not_nil post.created_at
@@ -221,11 +247,17 @@ class PostTest < Minitest::Test
     # https://www.facebook.com/reel/809749953859034
     post = Forki::Post.lookup("https://www.facebook.com/reel/809749953859034").first
     assert_not_nil(post)
+
+    assert File.size(post.video_file) > 1000
+    assert File.size(post.video_preview_image_file) > 1000
   end
 
   def test_reel_other_format
     post = Forki::Post.lookup("https://www.facebook.com/share/r/jh5LX4CNhPXxn83F/").first
     assert_not_nil(post)
+
+    assert File.size(post.video_file) > 1000
+    assert File.size(post.video_preview_image_file) > 1000
   end
 
   # Not sure why this is here, it's not a link that works
@@ -242,8 +274,12 @@ class PostTest < Minitest::Test
     assert_predicate post.reactions.length, :positive?
 
     assert_not_nil post.video_file
+    assert File.size(post.video_file) > 1000
+
     assert_not_nil post.screenshot_file
     assert_not_nil post.video_preview_image_file
+    assert File.size(post.video_preview_image_file) > 1000
+
     assert_nil post.image_file
 
     assert_not_nil post.user
@@ -251,7 +287,8 @@ class PostTest < Minitest::Test
   end
 
   def test_another_link_3
-    Forki::Post.lookup("https://www.facebook.com/icheck.tn/posts/pfbid02VmRj1WEajyKJVHnQxiuDDjGAJr3h1RHWekp1Z3a999RpBjat9d1XJAww999rLzUvl")
+    post = Forki::Post.lookup("https://www.facebook.com/icheck.tn/posts/pfbid02VmRj1WEajyKJVHnQxiuDDjGAJr3h1RHWekp1Z3a999RpBjat9d1XJAww999rLzUvl")
+    assert File.size(post.first.image_file) > 1000
   end
 
   def test_a_pure_text_link
@@ -261,22 +298,46 @@ class PostTest < Minitest::Test
   end
 
   def test_an_alternative_reel
-    Forki::Post.lookup("https://www.facebook.com/reel/2841887882618164")
+    post = Forki::Post.lookup("https://www.facebook.com/reel/2841887882618164")
+
+    assert_not_nil(post)
+    assert File.size(post.first.video_file) > 1000
+    assert File.size(post.first.video_preview_image_file) > 1000
   end
 
   def test_a_url_that_seems_to_fail
-    Forki::Post.lookup("https://www.facebook.com/mydefiguru/posts/2857725071050020/")
+    post = Forki::Post.lookup("https://www.facebook.com/mydefiguru/posts/2857725071050020/")
+    assert_not_nil(post)
+
+    assert File.size(post.first.video_file) > 1000
+    assert File.size(post.first.video_preview_image_file) > 1000
   end
 
   def test_a_url_that_seems_to_fail_2
-    Forki::Post.lookup("https://www.facebook.com/DonaldTrump/posts/pfbid09yccynLeptpTGdCzWnfGAqN6RH1eUg6WYo4jAekcvqvDJ4zrv4mFmkHoFB8cKed5l")
+    post = Forki::Post.lookup("https://www.facebook.com/DonaldTrump/posts/pfbid09yccynLeptpTGdCzWnfGAqN6RH1eUg6WYo4jAekcvqvDJ4zrv4mFmkHoFB8cKed5l")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
   end
 
   def test_a_url_that_seems_to_fail_3
-    Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
+    post = Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
   end
 
   def test_a_video_without_text_works
-    Forki::Post.lookup("https://www.facebook.com/100000568872011/videos/2240868886282175")
+    post = Forki::Post.lookup("https://www.facebook.com/100000568872011/videos/2240868886282175")
+    assert_not_nil(post)
+
+    assert File.size(post.first.video_file) > 1000
+    assert File.size(post.first.video_preview_image_file) > 1000
+  end
+
+  def test_a_removed_error_for_a_profile_page
+    assert_raises Forki::ContentUnavailableError do
+      Forki::Post.lookup("https://www.facebook.com/playstation/?__cft__[0]=AZVcv0eebmAWNbIbd2jsUlWsbMvhDrvPubd7sNoNPLaT73pi4nzRe5m6id2AnzA1Yn1pDwWDgxjzhzcAWTJKPoxn9GafaaZDGRhf-MXfVWMb6pwJr1UzuvmueUGKTDuumxeEq0SJD0DJtO0DANQsXSSb-HTZcf1YszoFWKnTUzXz-_OwLajIVZI83-TqlCqQAV6QPXQNTHP6Y5GWcucDRmid&__tn__=%2CO%2CP-R#?bfh")
+    end
   end
 end

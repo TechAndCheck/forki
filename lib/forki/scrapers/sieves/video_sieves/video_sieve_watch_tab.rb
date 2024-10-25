@@ -12,11 +12,11 @@ class VideoSieveWatchTab < VideoSieve
     return false unless video_object.kind_of?(Array) && !video_object.empty?
 
     video_object = video_object.first
-    return false unless video_object.kind_of?(Hash) && video_object.keys.include?("media")
+    return false unless video_object.kind_of?(Hash) && video_object.key?("media")
 
     true
   rescue StandardError
-    return false
+    false
   end
 
   # output the expected format of:
@@ -46,8 +46,6 @@ class VideoSieveWatchTab < VideoSieve
     video_url = video_object.dig("short_form_video_context", "playback_video", "browser_native_hd_url") if video_url.nil?
     video_url = video_object.dig("short_form_video_context", "playback_video", "browser_native_sd_url") if video_url.nil?
 
-    debugger if video_url.nil?
-
     video_preview_image_url = video_object["attachments"]&.first.dig("media", "preferred_thumbnail", "image", "uri")
     video_preview_image_url = video_object["short_form_video_context"]["video"]["first_frame_thumbnail"] if video_preview_image_url.nil?
 
@@ -60,7 +58,7 @@ class VideoSieveWatchTab < VideoSieve
 
     begin
       profile_link = video_object["attachments"].first["media"]["owner"]["url"]
-    rescue StandardError => e
+    rescue StandardError
       profile_link = video_object["short_form_video_context"]["video_owner"]["url"]
     end
 
@@ -75,11 +73,11 @@ class VideoSieveWatchTab < VideoSieve
       else
         reactions = feedback_object["top_reactions"]["edges"]
       end
-    rescue StandardError => e
+    rescue StandardError
       reactions = feedback_object["unified_reactors"]["count"]
     end
 
-    post_details = {
+    {
       id: video_object.dig("shareable", "id") || video_object["attachments"].first["media"]["id"],
       num_comments: feedback_object["total_comment_count"],
       num_shared: nil, # This is not associated with these videos in this format
@@ -97,7 +95,7 @@ class VideoSieveWatchTab < VideoSieve
     }
   end
 
-  private
+private
 
   def self.extractor(graphql_objects)
     video_objects = graphql_objects.filter do |go|

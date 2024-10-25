@@ -124,7 +124,7 @@ module Forki
       uri = URI(url)
       query = uri.query
       components = URI.decode_uri_component(query)
-      extracted_url = URI.extract(components).first
+      extracted_url = URI::Parser.new.extract(components).first
       extracted_uri = URI(extracted_url)
       username = extracted_uri.to_s.match(/(https:\/\/www.instagram.com\/_u\/[\w]+)/).to_s.split("/").last
 
