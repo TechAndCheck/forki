@@ -46,8 +46,15 @@ class VideoSieveWatchTab < VideoSieve
     video_url = video_object.dig("short_form_video_context", "playback_video", "browser_native_hd_url") if video_url.nil?
     video_url = video_object.dig("short_form_video_context", "playback_video", "browser_native_sd_url") if video_url.nil?
 
+    video_url = video_object["attachments"]&.first.dig("media", "videoDeliveryLegacyFields", "browser_native_hd_url") if video_url.nil?
+    video_url = video_object["attachments"]&.first.dig("media", "videoDeliveryLegacyFields", "browser_native_sd_url") if video_url.nil?
+
+    raise VideoSieveFailedError.new(sieve_class: "VideoSieveWatchTab") if video_url.nil?
+
     video_preview_image_url = video_object["attachments"]&.first.dig("media", "preferred_thumbnail", "image", "uri")
     video_preview_image_url = video_object["short_form_video_context"]["video"]["first_frame_thumbnail"] if video_preview_image_url.nil?
+
+    raise VideoSieveFailedError.new(sieve_class: "VideoSieveWatchTab") if video_preview_image_url.nil?
 
     if !video_object["feedback_context"].nil?
       feedback_object = video_object["feedback_context"]["feedback_target_with_context"]

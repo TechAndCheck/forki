@@ -340,4 +340,12 @@ class PostTest < Minitest::Test
       Forki::Post.lookup("https://www.facebook.com/playstation/?__cft__[0]=AZVcv0eebmAWNbIbd2jsUlWsbMvhDrvPubd7sNoNPLaT73pi4nzRe5m6id2AnzA1Yn1pDwWDgxjzhzcAWTJKPoxn9GafaaZDGRhf-MXfVWMb6pwJr1UzuvmueUGKTDuumxeEq0SJD0DJtO0DANQsXSSb-HTZcf1YszoFWKnTUzXz-_OwLajIVZI83-TqlCqQAV6QPXQNTHP6Y5GWcucDRmid&__tn__=%2CO%2CP-R#?bfh")
     end
   end
+
+  def test_a_video_isnt_blank
+    post = Forki::Post.lookup("https://www.facebook.com/share/v/g1uQJ98rQp9pSEjw/")
+    assert_not_nil(post)
+
+    assert File.size(post.first.video_file) > 1000
+    assert File.size(post.first.video_preview_image_file) > 1000
+  end
 end

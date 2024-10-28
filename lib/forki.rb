@@ -48,6 +48,13 @@ module Forki
     end
   end
 
+  class VideoSieveFailedError < StandardError
+    def initialize(msg = "Video sieve failed to find a video", sieve_class: VideoSieve)
+      self.msg = "#{sieve_class} failed to find a video" if msg.nil?
+      super
+    end
+  end
+
   define_setting :temp_storage_location, "tmp/forki"
 
   # Extract the file extension from a media URL
