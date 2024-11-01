@@ -33,12 +33,12 @@ module Forki
 
       if post_is_text_only
         extract_text_post_data(graphql_objects)
+      elsif post_has_image && !post_has_video && !post_has_video_in_comment_stream
+        extract_image_post_data(graphql_objects)
       elsif post_has_video
         extract_video_post_data(graphql_strings)
       elsif post_has_video_in_comment_stream
         extract_video_comment_post_data(graphql_objects)
-      elsif post_has_image
-        extract_image_post_data(graphql_objects)
       else
         extract_image_post_data(graphql_objects)
       end
@@ -84,6 +84,7 @@ module Forki
         return true unless graphql_object.fetch("image", nil).nil? # so long as the associated values are not nil
         return true unless graphql_object.fetch("currMedia", nil).nil?
         return true unless graphql_object.fetch("photo_image", nil).nil?
+        return true unless graphql_object.fetch("large_share_image", nil).nil?
 
         # This is a complicated form for `web.facebook.com` posts
         if !graphql_object.dig("node", "comet_sections", "content", "story", "attachments").nil?
@@ -329,11 +330,10 @@ module Forki
         reshare_warning = feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
       end
 
-      if !video_object.key?("browser_native_hd_url") && !video_object.key?("browser_native_sd_url") && video_object.key?("videoDeliveryLegacyFields")
-        video_url = video_object["videoDeliveryLegacyFields"]["browser_native_hd_url"] || video_object["videoDeliveryLegacyFields"]["browser_native_sd_url"]
-      else
-        video_url = video_object["browser_native_hd_url"] || video_object["browser_native_sd_url"]
-      end
+      video_object_url_subsearch = video_object
+      video_object_url_subsearch = video_object_url_subsearch["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
+      # if video_object.key?("browser_native_hd_url") || video_object.key?("browser_native_sd_url")
+      video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
 
       post_details = {
         id: video_object["id"],
@@ -441,6 +441,10 @@ module Forki
 
           if image_url.nil?
             image_url = attachments.first&.dig("styles", "attachment", "media", "large_share_image", "uri")
+          end
+
+          if image_url.nil?
+            image_url = attachments.first&.dig("styles", "attachment", "media", "image", "uri")
           end
         end
 

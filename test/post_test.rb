@@ -143,6 +143,7 @@ class PostTest < Minitest::Test
               https://www.facebook.com/watch/?v=3743756062349219]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
+      puts "Testing #{post.url}"
       assert post.has_video
       assert_predicate post.num_views, :positive?
 
@@ -320,12 +321,13 @@ class PostTest < Minitest::Test
     assert File.size(post.first.image_file) > 1000
   end
 
-  def test_a_url_that_seems_to_fail_3
-    post = Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
-    assert_not_nil(post)
+  # NOTE: This does fail, because it's gone'
+  # def test_a_url_that_seems_to_fail_3
+  #   post = Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
+  #   assert_not_nil(post)
 
-    assert File.size(post.first.image_file) > 1000
-  end
+  #   assert File.size(post.first.image_file) > 1000
+  # end
 
   def test_a_video_without_text_works
     post = Forki::Post.lookup("https://www.facebook.com/100000568872011/videos/2240868886282175")
