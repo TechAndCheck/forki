@@ -350,4 +350,11 @@ class PostTest < Minitest::Test
     assert File.size(post.first.video_file) > 1000
     assert File.size(post.first.video_preview_image_file) > 1000
   end
+
+  def test_a_new_link
+    post = Forki::Post.lookup("https://www.facebook.com/inovace.republiky/posts/pfbid0QLTYeKpfr1AfBB5XtT2LxD3BtJAVrVt3rNN4NsqDqB31ypS6HJMnu6Yq1Dwh4scYl")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
+  end
 end

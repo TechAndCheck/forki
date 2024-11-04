@@ -64,7 +64,17 @@ module Forki
     end
 
     def check_if_post_is_video(graphql_objects)
-      graphql_objects.any? { |graphql_object| graphql_object.key?("is_live_streaming") || graphql_object.key?("video") || check_if_post_is_reel(graphql_object) }
+      result = graphql_objects.any? do |graphql_object|
+        next unless graphql_object.dig("viewer", "news_feed").nil?
+
+        result = graphql_object.to_s.include?("videoDeliveryLegacyFields")
+        result = graphql_object.key?("is_live_streaming") && graphql_object["is_live_streaming"] == true if result == false
+        result = graphql_object.key?("video") if result == false
+        result = check_if_post_is_reel(graphql_object) if result == false
+        result
+      end
+
+      result
     end
 
     def check_if_post_is_reel(graphql_object)
@@ -299,7 +309,7 @@ module Forki
 
       share_count_object = feedback_object.fetch("share_count", {})
 
-      if story_node_object["comet_sections"]["content"]["story"]["comet_sections"].key? "message"
+      if story_node_object["comet_sections"]["content"]["story"]["comet_sections"].key?("message") && !story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"].nil?
         text = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"]
       else
         text = ""
