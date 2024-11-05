@@ -357,4 +357,11 @@ class PostTest < Minitest::Test
 
     assert File.size(post.first.image_file) > 1000
   end
+
+  def test_a_shared_plugin_link_can_be_scraped
+    post = Forki::Post.lookup("https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fpakcik.kacak.90%2Fposts%2Fpfbid0jDj8E7hWJe3kyvDtH255zmcwHZQHPVtidxyhooiGoy841qxXuaAYQTifsBA3E1Bwl&show_text=true&width=500")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
+  end
 end

@@ -189,6 +189,18 @@ module Forki
         url = parsed_url.to_s
       end
 
+      # If the url is a shared embed, the main url should be extracted
+      if url.start_with?("https://www.facebook.com/plugins/post.php")
+        query = URI(url).query
+        raise Forki::InvalidUrlError.new("Invalid Facebook post embed url") if query.nil?
+        decoded_query = URI.decode_www_form(query)
+        elemental_url = decoded_query.find { |u| u[0] == "href" if u.is_a?(Array) }
+        raise Forki::InvalidUrlError.new("Invalid Facebook post embed url") if elemental_url.nil?
+        href = elemental_url[1] if elemental_url.is_a?(Array)
+        raise Forki::InvalidUrlError.new("Invalid Facebook post embed url") if href.nil?
+        url = href
+      end
+
       visit "https://www.facebook.com"
       login
 
