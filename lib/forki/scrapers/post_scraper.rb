@@ -64,8 +64,9 @@ module Forki
     end
 
     def check_if_post_is_video(graphql_objects)
-      result = graphql_objects.any? do |graphql_object|
-        next unless graphql_object.dig("viewer", "news_feed").nil?
+      result = graphql_objects.find do |graphql_object|
+        next unless graphql_object.dig("viewer", "news_feed").nil? # The new page loads the news feed *and* the post
+        next unless graphql_object.dig("node", "sponsored_data").nil? # Ads sneak in too but don't mark as feed
 
         result = graphql_object.to_s.include?("videoDeliveryLegacyFields")
         result = graphql_object.key?("is_live_streaming") && graphql_object["is_live_streaming"] == true if result == false
@@ -74,7 +75,7 @@ module Forki
         result
       end
 
-      result
+      !result.nil?
     end
 
     def check_if_post_is_reel(graphql_object)

@@ -364,4 +364,11 @@ class PostTest < Minitest::Test
 
     assert File.size(post.first.image_file) > 1000
   end
+
+  def test_a_share_link_works
+    post = Forki::Post.lookup("https://www.facebook.com/share/p/15FenUaX48/")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
+  end
 end
