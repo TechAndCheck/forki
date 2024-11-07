@@ -370,5 +370,14 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
 
     assert File.size(post.first.image_file) > 1000
+    assert_not_nil(post.first.user)
+  end
+
+  def test_a_post_in_a_group_works
+    post = Forki::Post.lookup("https://www.facebook.com/groups/1167375190065211/posts/3307116829424359/")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
+    assert post.first.user.empty?
   end
 end

@@ -644,8 +644,7 @@ module Forki
       end
 
       # page.quit # Close browser between page navigation to prevent cache folder access issues
-
-      post_data[:user] = User.lookup(user_url).first
+      post_data[:user] = user_url.present? ? User.lookup(user_url) : {}
       page.quit
 
       post_data
