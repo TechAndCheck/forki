@@ -113,7 +113,7 @@ class PostTest < Minitest::Test
     end
   end
 
-  def test_a_video_post_by_a_page_retuns_properly_when_scraped
+  def test_a_video_post_by_a_page_retuns_properly_when_scraped # 777777777777777
     urls = %w[https://www.facebook.com/161453087348302/videos/684374025476745/
               https://www.facebook.com/AmericaFirstAction/videos/323018088749144/
               https://www.facebook.com/Meta/videos/264436895517475]
@@ -138,7 +138,7 @@ class PostTest < Minitest::Test
     end
   end
 
-  def test_a_video_in_the_watch_tab_returns_properly_when_scraped
+  def test_a_video_in_the_watch_tab_returns_properly_when_scraped # 777777777777777777777
     urls = %w[https://www.facebook.com/watch/?v=2707731869527520
               https://www.facebook.com/watch/?v=3743756062349219]
     posts = Forki::Post.lookup(urls)
@@ -330,7 +330,7 @@ class PostTest < Minitest::Test
   # end
 
   def test_a_video_without_text_works
-    post = Forki::Post.lookup("https://www.facebook.com/100000568872011/videos/2240868886282175")
+    post = Forki::Post.lookup("https://www.facebook.com/watch/live/?ref=watch_permalink&v=535737772684504")
     assert_not_nil(post)
 
     assert File.size(post.first.video_file) > 1000

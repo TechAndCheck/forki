@@ -51,7 +51,7 @@ module Forki
   class VideoSieveFailedError < StandardError
     def initialize(msg = "Video sieve failed to find a video", sieve_class: VideoSieve)
       self.msg = "#{sieve_class} failed to find a video" if msg.nil?
-      super
+      # super(self.msg)
     end
   end
 

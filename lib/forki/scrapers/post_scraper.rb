@@ -341,10 +341,16 @@ module Forki
         reshare_warning = feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
       end
 
-      video_object_url_subsearch = video_object
-      video_object_url_subsearch = video_object_url_subsearch["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
-      # if video_object.key?("browser_native_hd_url") || video_object.key?("browser_native_sd_url")
-      video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+      if video_object.has_key?("videoDeliveryResponseFragment")
+        progressive_urls_wrapper = video_object["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
+        video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
+      else
+        video_object_url_subsearch = video_object
+        video_object_url_subsearch = video_object_url_subsearch["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
+        video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+      end
+
+      video_url = "" if video_url.nil?
 
       post_details = {
         id: video_object["id"],
