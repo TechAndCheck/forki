@@ -366,7 +366,7 @@ class PostTest < Minitest::Test
   end
 
   def test_a_share_link_works
-    post = Forki::Post.lookup("https://www.facebook.com/share/p/15FenUaX48/")
+    post = Forki::Post.lookup("https://www.facebook.com/share/v/13NPBYGEFF/")
     assert_not_nil(post)
 
     assert File.size(post.first.image_file) > 1000
@@ -379,5 +379,13 @@ class PostTest < Minitest::Test
 
     assert File.size(post.first.image_file) > 1000
     assert post.first.user.empty?
+  end
+
+  def test_a_post_has_a_single_user_not_array
+    post = Forki::Post.lookup("https://www.facebook.com/share/v/13NPBYGEFF/")
+    assert_not_nil(post)
+
+    assert_not_nil(post.first.user)
+    assert_kind_of(Forki::User, post.first.user)
   end
 end
