@@ -201,10 +201,21 @@ module Forki
         url = href
       end
 
-      visit "https://www.facebook.com"
-      login
+      visit url # unless current_url.start_with?(url)
 
-      visit url unless current_url.start_with?(url)
+      # Let's check if we need to try to login first
+      begin
+        content_unavailable_flag = !find("span", text: "This content isn't available right now", wait: 2).nil?
+      rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
+        content_unavailable_flag = false
+      end
+
+      if content_unavailable_flag
+        visit("https://www.facebook.com")
+        login
+        visit(url)
+      end # Find and close a dialog if possible, aria-label="Close"
+
       # # If the video is a watch page it doesn't have most of the data we want so we click on the video
       # if url.include?("watch/live")
       #   clickable_element = find("video")

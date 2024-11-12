@@ -99,7 +99,7 @@ class VideoSieveWatchTab < VideoSieve
       id: video_object.dig("shareable", "id") || video_object["attachments"].first["media"]["id"],
       num_comments: feedback_object["total_comment_count"],
       num_shared: nil, # This is not associated with these videos in this format
-      num_views: nil, # This is not associated with these videos in this format
+      num_views: feedback_object.dig("video_view_count_renderer", "feedback", "video_view_count"), # This is not associated with these videos in this format
       reshare_warning: feedback_object["should_show_reshare_warning"],
       video_preview_image_url: video_preview_image_url,
       video_url: video_url,

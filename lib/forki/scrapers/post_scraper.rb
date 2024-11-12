@@ -31,6 +31,7 @@ module Forki
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
       post_has_video_in_comment_stream = check_if_post_is_in_comment_stream(graphql_objects) if post_has_video == false
 
+
       if post_is_text_only
         extract_text_post_data(graphql_objects)
       elsif post_has_image && !post_has_video && !post_has_video_in_comment_stream
@@ -341,7 +342,7 @@ module Forki
         reshare_warning = feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
       end
 
-      if video_object.has_key?("videoDeliveryResponseFragment")
+      if video_object.has_key?("videoDeliveryResponseFragment") && !video_object["videoDeliveryResponseFragment"].nil?
         progressive_urls_wrapper = video_object["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
         video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
       else
@@ -397,8 +398,11 @@ module Forki
       text = "" if text.nil?
 
       video_url = video_object["video"]["playable_url_quality_hd"] || video_object["video"]["browser_native_hd_url"] || video_object["video"]["browser_native_sd_url"] || video_object["video"]["playable_url"]
-      if video_url.nil? && video_object["video"].key?("videoDeliveryLegacyFields")
+      if video_url.nil? && !video_object.dig("video", "videoDeliveryLegacyFields").nil?
         video_url = video_object["video"]["videoDeliveryLegacyFields"]["browser_native_hd_url"] || video_object["video"]["videoDeliveryLegacyFields"]["browser_native_sd_url"]
+      elsif !video_object.dig("video", "videoDeliveryResponseFragment", "videoDeliveryResponseResult").nil?
+        progressive_urls_wrapper = video_object["video"]["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
+        video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
       end
 
       post_details = {

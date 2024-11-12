@@ -54,7 +54,7 @@ class VideoSieveReel2 < VideoSieve
     video_preview_image_url = video_object["short_form_video_context"]["playback_video"]["preferred_thumbnail"]["image"]["uri"]
     video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_hd_url"] || video_object["short_form_video_context"]["playback_video"]["browser_native_sd_url"]
 
-    if !video_object.dig("short_form_video_context", "playback_video").nil?
+    if !video_object.dig("short_form_video_context", "playback_video", "videoDeliveryResponseFragment", "videoDeliveryResponseResult").nil?
       video_object_url_subsearch = video_object["short_form_video_context"]["playback_video"]
       progressive_urls_wrapper = video_object_url_subsearch["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
       video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
