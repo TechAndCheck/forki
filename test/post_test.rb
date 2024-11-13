@@ -143,7 +143,6 @@ class PostTest < Minitest::Test
               https://www.facebook.com/watch/?v=3743756062349219]
     posts = Forki::Post.lookup(urls)
     posts.each do |post|
-      puts "Testing #{post.url}"
       assert post.has_video
       assert_predicate post.num_views, :positive?
 

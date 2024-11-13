@@ -16,7 +16,9 @@ options.add_argument("--disable-dev-shm-usage")
 options.add_argument("–-disable-blink-features=AutomationControlled")
 options.add_argument("--disable-extensions")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
-options.add_preference "password_manager_enabled", false
+options.add_preference "profile.password_manager_enabled", false
+options.add_preference "credentials_enable_service", false
+options.add_preference "profile.default_content_setting_values.notifications", 2
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
 options.add_argument("--user-data-dir=/tmp/tarun_forki_#{SecureRandom.uuid}")
@@ -34,10 +36,12 @@ Capybara.reuse_server = true
 module Forki
   class Scraper # rubocop:disable Metrics/ClassLength
     include Capybara::DSL
+    attr_reader :logged_in
 
     def initialize
       Capybara.default_driver = :selenium_forki
       Forki.set_logger_level
+      @logged_in = false
       # reset_selenium
     end
 
@@ -171,7 +175,14 @@ module Forki
       rescue Capybara::ElementNotFound; end
 
       # Now we wait awhile, hopefully to slow down scraping
+      @logged_in = true
       sleep(rand * 10.3)
+    end
+
+    def logout
+      first(:xpath, "//div[@aria-label='Your profile']").click
+      first("span", text: "Log Out").click()
+      @logged_in = false
     end
 
     # Ensures that a valid Facebook url has been provided, and that it points to an available post
@@ -212,10 +223,10 @@ module Forki
 
       if content_unavailable_flag
         visit("https://www.facebook.com")
-        login
-        visit(url)
+        login if !logged_in
       end # Find and close a dialog if possible, aria-label="Close"
 
+      visit(url)
       # # If the video is a watch page it doesn't have most of the data we want so we click on the video
       # if url.include?("watch/live")
       #   clickable_element = find("video")
@@ -227,7 +238,6 @@ module Forki
       #   clickable_element.click
       # end
     end
-
 
     # Extracts an integer out of a string describing a number
     # e.g. "4K Comments" returns 4000

@@ -117,6 +117,8 @@ module Forki
       user_details[:profile_image_file] = Forki.retrieve_media(user_details[:profile_image_url])
       user_details[:profile_link] = url
 
+      logout if self.logged_in
+
       user_details
     end
 
