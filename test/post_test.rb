@@ -377,11 +377,19 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
 
     assert File.size(post.first.image_file) > 1000
-    assert post.first.user.empty?
+    assert post.first.user.nil?
   end
 
   def test_a_post_has_a_single_user_not_array
     post = Forki::Post.lookup("https://www.facebook.com/share/v/13NPBYGEFF/")
+    assert_not_nil(post)
+
+    assert_not_nil(post.first.user)
+    assert_kind_of(Forki::User, post.first.user)
+  end
+
+  def test_a_post_user_isnt_a_hash
+    post = Forki::Post.lookup("https://www.facebook.com/coky.sanz/posts/pfbid02ui2kmLi88LdTMxeGaj5U7Qxf7V3gn2RviGS86p8RLH47X3qsUafLdXs77krCVVcKl")
     assert_not_nil(post)
 
     assert_not_nil(post.first.user)

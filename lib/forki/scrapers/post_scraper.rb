@@ -31,7 +31,6 @@ module Forki
       # https://www.facebook.com/PlandemicMovie/posts/588866298398729/
       post_has_video_in_comment_stream = check_if_post_is_in_comment_stream(graphql_objects) if post_has_video == false
 
-
       if post_is_text_only
         extract_text_post_data(graphql_objects)
       elsif post_has_image && !post_has_video && !post_has_video_in_comment_stream
@@ -636,13 +635,20 @@ module Forki
 
     # Uses GraphQL data and DOM elements to collect information about the current post
     def parse(url)
-      validate_and_load_page(url)
-      graphql_strings = find_graphql_data_strings(page.html)
+      post_data = {}
 
-      post_data = extract_post_data(graphql_strings)
+      # Occasionally there will be a post that's public, but an account isn't and you need to login first
+      2.times do
+        validate_and_load_page(url)
+        graphql_strings = find_graphql_data_strings(page.html)
+
+        post_data = extract_post_data(graphql_strings)
+        break if post_data[:profile_link].present?
+
+        login
+      end
 
       post_data[:url] = url
-      user_url = post_data[:profile_link]
 
       5.times do
         begin
@@ -650,11 +656,11 @@ module Forki
           break
         rescue Net::ReadTimeout; end
 
-        sleep(5)
+        sleep(2)
       end
 
       # page.quit # Close browser between page navigation to prevent cache folder access issues
-      post_data[:user] = user_url.present? ? User.lookup(user_url)&.first : {}
+      post_data[:user] = post_data[:profile_link].present? ? User.lookup(post_data[:profile_link])&.first : nil
       page.quit
 
       post_data
