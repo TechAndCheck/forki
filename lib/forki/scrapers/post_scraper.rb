@@ -68,13 +68,15 @@ module Forki
         next unless graphql_object.dig("viewer", "news_feed").nil? # The new page loads the news feed *and* the post
         next unless graphql_object.dig("node", "sponsored_data").nil? # Ads sneak in too but don't mark as feed
 
-        result = graphql_object.to_s.include?("videoDeliveryLegacyFields")
+        result = graphql_object.dig("node", "comet_sections", "content")&.to_s&.include?("videoDeliveryLegacyFields")
+        result = false if result.nil? # If the above line returns nil, set it to false
         result = graphql_object.key?("is_live_streaming") && graphql_object["is_live_streaming"] == true if result == false
         result = graphql_object.key?("video") if result == false
         result = check_if_post_is_reel(graphql_object) if result == false
         result
       end
 
+      # node # comet_sections # content # story # attachments # styles # attachment # style_infos
       !result.nil?
     end
 
@@ -289,6 +291,7 @@ module Forki
       else
         raise "Unable to parse video object" if video_objects.empty?
       end
+
 
       begin
         feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
@@ -661,6 +664,7 @@ module Forki
 
       # page.quit # Close browser between page navigation to prevent cache folder access issues
       post_data[:user] = post_data[:profile_link].present? ? User.lookup(post_data[:profile_link])&.first : nil
+      logout if self.logged_in
       page.quit
 
       post_data

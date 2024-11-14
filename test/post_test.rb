@@ -395,4 +395,11 @@ class PostTest < Minitest::Test
     assert_not_nil(post.first.user)
     assert_kind_of(Forki::User, post.first.user)
   end
+
+  def test_yet_another_link_1
+    post = Forki::Post.lookup("https://www.facebook.com/TrucsMaman/posts/1232930621331239")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
+  end
 end

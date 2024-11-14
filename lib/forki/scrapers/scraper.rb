@@ -226,7 +226,9 @@ module Forki
         login if !logged_in
       end # Find and close a dialog if possible, aria-label="Close"
 
-      visit(url)
+      visit(url) # I have no idea why this is out here, but it has to be otherwise looking up a user after a log out fails
+      # This isn't strictly necessary since we're already looking up a post first, but for testing... yeah
+
       # # If the video is a watch page it doesn't have most of the data we want so we click on the video
       # if url.include?("watch/live")
       #   clickable_element = find("video")

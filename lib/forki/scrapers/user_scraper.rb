@@ -105,6 +105,8 @@ module Forki
       # So some reels may actually link to an instagram user?
       if url.include?("instagram.com")
         user = get_instagram_user(url)
+        logout if self.logged_in
+
         return user
       end
 
