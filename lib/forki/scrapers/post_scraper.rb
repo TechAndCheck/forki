@@ -288,6 +288,12 @@ module Forki
         # For "Reels" we need a separate way to parse this
         video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["short_form_video_context"]["playback_video"]
         creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["creation_time"]
+      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("all_subattachments")
+        # TODO: This is for multiple videos, which this scraper doesn't suport yet, but the others do
+        # go through the other scrapers and copy the format'
+        #
+        # For now, we'll just grab the first onne though'
+        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["all_subattachments"]["nodes"][0]["media"]["video_grid_renderer"]["video"]
       else
         raise "Unable to parse video object" if video_objects.empty?
       end

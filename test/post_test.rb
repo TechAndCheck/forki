@@ -402,4 +402,18 @@ class PostTest < Minitest::Test
 
     assert File.size(post.first.image_file) > 1000
   end
+
+  def test_yet_another_link_2
+    post = Forki::Post.lookup("https://www.facebook.com/permalink.php?story_fbid=pfbid02E26psygjdZJ7YEeEhXJkgTpbDdjYZZHNZyezK9iA65PGPwQKT35pHb4GjoVVexGcl&id=100079991325065")
+    assert_not_nil(post)
+
+    assert File.size(post.first.video_file) > 1000
+  end
+
+  def test_yet_another_link_3
+    post = Forki::Post.lookup("https://www.facebook.com/photo/?fbid=457385744033402&set=gm.1286366285845289&idorvanity=962919028190018")
+    assert_not_nil(post)
+
+    assert File.size(post.first.image_file) > 1000
+  end
 end
