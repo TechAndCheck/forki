@@ -408,12 +408,12 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
 
     assert File.size(post.first.video_file) > 1000
+    assert File.size(post.first.user.profile_image_file) > 1000
   end
 
-  def test_yet_another_link_3
-    post = Forki::Post.lookup("https://www.facebook.com/photo/?fbid=457385744033402&set=gm.1286366285845289&idorvanity=962919028190018")
+  def test_text_message_post
+    post = Forki::Post.lookup("https://www.facebook.com/share/p/15BRyTma9f/")
     assert_not_nil(post)
-
-    assert File.size(post.first.image_file) > 1000
+    assert_not_nil(post.first.text)
   end
 end
