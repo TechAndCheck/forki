@@ -362,9 +362,9 @@ module Forki
       elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("all_subattachments")
         # TODO: This is for multiple videos, which this scraper doesn't suport yet, but the others do
         # go through the other scrapers and copy the format'
-        #
-        # For now, we'll just grab the first onne though'
-        video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["all_subattachments"]["nodes"][0]["media"]["video_grid_renderer"]["video"]
+        video_object = {} # Set this nil so the other code doesn't break, but we can check later
+        video_object_array = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["all_subattachments"]["nodes"]
+        creation_date = story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"][0]["story"]["creation_time"]
       else
         raise "Unable to parse video object" if video_objects.empty?
       end
@@ -424,13 +424,26 @@ module Forki
       if video_object.has_key?("videoDeliveryResponseFragment") && !video_object["videoDeliveryResponseFragment"].nil?
         progressive_urls_wrapper = video_object["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
         video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
-      else
+      elsif video_object_array.nil?
         video_object_url_subsearch = video_object
-        video_object_url_subsearch = video_object_url_subsearch["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
+        video_object_url_subsearch = video_object["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
         video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+
+        video_preview_image_url = video_object["preferred_thumbnail"]["image"]["uri"]
+      else
+        video_urls = video_object_array.map do |video_object|
+          video_object_url_subsearch = video_object["media"]["video_grid_renderer"]["video"]
+          video_object_url_subsearch = video_object_url_subsearch["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
+          video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+        end
+
+        video_preview_image_urls = video_object_array.map do |video_object|
+          video_object["media"]["video_grid_renderer"]["video"]["preferred_thumbnail"]["image"]["uri"]
+        end
       end
 
       video_url = "" if video_url.nil?
+      video_urls = [] if video_urls.nil?
 
       post_details = {
         id: video_object["id"],
@@ -438,8 +451,10 @@ module Forki
         num_shares: share_count_object.fetch("count", nil),
         num_views: view_count,
         reshare_warning: reshare_warning,
-        video_preview_image_url: video_object["preferred_thumbnail"]["image"]["uri"],
+        video_preview_image_url: video_preview_image_url,
+        video_preview_image_urls: video_preview_image_urls,
         video_url: video_url,
+        video_urls: video_urls,
         text: text,
         created_at: creation_date,
         profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
@@ -448,6 +463,7 @@ module Forki
       post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
       post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
       post_details[:reactions] = reaction_counts
+
       post_details
     end
 

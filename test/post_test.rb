@@ -416,4 +416,23 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
     assert_not_nil(post.first.text)
   end
+
+  def test_a_video_is_actually_downloaded
+    post = Forki::Post.lookup("https://www.facebook.com/100089812680688/videos/2360570097610510/")
+    assert_not_nil(post)
+
+    assert File.size(post.first.video_file) > 1000
+    assert File.size(post.first.user.profile_image_file) > 1000
+  end
+
+  def test_multiple_videos_work
+    posts = Forki::Post.lookup("https://www.facebook.com/permalink.php?story_fbid=pfbid02E26psygjdZJ7YEeEhXJkgTpbDdjYZZHNZyezK9iA65PGPwQKT35pHb4GjoVVexGcl&id=100079991325065")
+    assert_not_nil(posts)
+
+    posts.each do |post|
+      assert File.size(post.video_file) > 1000
+      assert File.size(post.user.profile_image_file) > 1000
+      assert_not_nil(post.created_at)
+    end
+  end
 end
