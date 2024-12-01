@@ -39,7 +39,7 @@ class VideoSieveVideoPage2 < VideoSieve
     video_object = extracted_text["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]
     feedback_object = extracted_text["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]["comet_ufi_summary_and_actions_renderer"]["feedback"]
 
-    video_preview_image_url = video_object["preferred_thumbnail"]["image"]["uri"]
+    video_preview_image_urls = [video_object["preferred_thumbnail"]["image"]["uri"]]
     video_url = video_object["browser_native_hd_url"]
     video_url = video_object["browser_native_sd_url"] if video_url.nil?
 
@@ -49,14 +49,14 @@ class VideoSieveVideoPage2 < VideoSieve
       num_shared: feedback_object["share_count"]["count"],
       num_views: nil,
       reshare_warning: feedback_object["should_show_reshare_warning"],
-      video_preview_image_url: video_preview_image_url,
+      video_preview_image_urls: video_preview_image_urls.map { |url| Forki.retrieve_media(url) },
       video_url: video_url,
       text: story_object["message"]["text"],
       created_at: video_object["publish_time"],
       profile_link: story_object["actors"].first["url"],
       has_video: true,
-      video_preview_image_file: Forki.retrieve_media(video_preview_image_url),
-      video_file: Forki.retrieve_media(video_url),
+      video_preview_image_files: video_preview_image_urls.map { |url| Forki.retrieve_media(url) },
+      video_files: [Forki.retrieve_media(video_url)],
       reactions: feedback_object["top_reactions"]["edges"]
     }
   end

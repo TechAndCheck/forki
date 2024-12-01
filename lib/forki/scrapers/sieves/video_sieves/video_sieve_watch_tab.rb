@@ -66,6 +66,7 @@ class VideoSieveWatchTab < VideoSieve
     video_preview_image_url = video_object["short_form_video_context"]["video"]["first_frame_thumbnail"] if video_preview_image_url.nil?
 
     raise Forki::VideoSieveFailedError.new(sieve_class: "VideoSieveWatchTab") if video_preview_image_url.nil?
+    video_preview_image_urls = [video_preview_image_url]
 
     if !video_object["feedback_context"].nil?
       feedback_object = video_object["feedback_context"]["feedback_target_with_context"]
@@ -101,14 +102,14 @@ class VideoSieveWatchTab < VideoSieve
       num_shared: nil, # This is not associated with these videos in this format
       num_views: feedback_object.dig("video_view_count_renderer", "feedback", "video_view_count"), # This is not associated with these videos in this format
       reshare_warning: feedback_object["should_show_reshare_warning"],
-      video_preview_image_url: video_preview_image_url,
+      video_preview_image_urls: video_preview_image_urls,
       video_url: video_url,
       text: nil, # There is no text associated with these videos
       created_at: video_object["attachments"].first["media"]["publish_time"],
       profile_link: profile_link,
       has_video: true,
-      video_preview_image_file: Forki.retrieve_media(video_preview_image_url),
-      video_file: Forki.retrieve_media(video_url),
+      video_preview_image_files: video_preview_image_urls.map { |url| Forki.retrieve_media(url) },
+      video_files: [Forki.retrieve_media(video_url)],
       reactions: reactions
     }
   end

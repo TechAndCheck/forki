@@ -53,7 +53,7 @@ class VideoSieveReel < VideoSieve
     reels_feedback_renderer["reels_feedback_renderer"]["story"]
     reshare_warning = video_object["short_form_video_context"]["playback_video"].dig("warning_screen_renderer", "cix_screen", "view_model", "__typename") == "OverlayWarningScreenViewModel"
 
-    video_preview_image_url = video_object["short_form_video_context"]["playback_video"]["preferred_thumbnail"]["image"]["uri"]
+    video_preview_image_urls = [video_object["short_form_video_context"]["playback_video"]["preferred_thumbnail"]["image"]["uri"]]
     video_url = video_object["short_form_video_context"]["playback_video"]["browser_native_hd_url"] || video_object["short_form_video_context"]["playback_video"]["browser_native_sd_url"]
 
     {
@@ -62,14 +62,14 @@ class VideoSieveReel < VideoSieve
       num_shared: Forki::Scraper.extract_int_from_num_element(feedback_object["feedback"]["share_count_reduced"]),
       num_views: nil,
       reshare_warning: reshare_warning,
-      video_preview_image_url: video_preview_image_url,
+      video_preview_image_urls: video_preview_image_urls,
       video_url: video_url,
       text: nil, # Reels don't have text
       created_at: JSON.parse(feedback_object["tracking"])["page_insights"].first[1]["post_context"]["publish_time"], # Yea, this is weird
       profile_link: video_object["short_form_video_context"]["video_owner"]["url"],
       has_video: true,
-      video_preview_image_file: Forki.retrieve_media(video_preview_image_url),
-      video_file: Forki.retrieve_media(video_url),
+      video_preview_image_files: video_preview_image_url.map { |url| Forki.retrieve_media(url) },
+      video_files: [Forki.retrieve_media(video_url)],
       reactions: nil # Only available on comments it seems? Look into this again sometime
     }
   end

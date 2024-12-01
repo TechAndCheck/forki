@@ -307,16 +307,16 @@ module Forki
         num_shares: feedback_object["share_count"]["count"],
         num_views: feedback_object["video_view_count"],
         reshare_warning: feedback_object["should_show_reshare_warning"],
-        video_preview_image_url: media["preferred_thumbnail"]["image"]["uri"],
-        video_url: media["playable_url_quality_hd"] || media["playable_url"],
+        video_preview_image_urls: [media["preferred_thumbnail"]["image"]["uri"]],
+        video_urls: [media["playable_url_quality_hd"] || media["playable_url"]],
         text: graphql_nodes.first["comet_sections"]["content"]["story"]["comet_sections"]["message"]["story"]["message"]["text"],
         created_at: media["publish_time"],
         profile_link: graphql_nodes.first["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"].first["url"],
         has_video: true
       }
 
-      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_files] = [Forki.retrieve_media(post_details[:video_preview_image_url])]
+      post_details[:video_files] = [Forki.retrieve_media(post_details[:video_url])]
       post_details[:reactions] = inital_feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["i18n_reaction_count"]
       post_details
     end
@@ -421,20 +421,41 @@ module Forki
         reshare_warning = feedback_object["comet_ufi_summary_and_actions_renderer"]["feedback"]["should_show_reshare_warning"]
       end
 
+      # This is a bit of a mess, mostly because of the different ways Facebook structures its video objects, especially
+      # the "legacy" which is being migrated, but not 100% of the way there yet
       if video_object.has_key?("videoDeliveryResponseFragment") && !video_object["videoDeliveryResponseFragment"].nil?
         progressive_urls_wrapper = video_object["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
-        video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
+        video_urls = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
+        video_urls = [video_urls]
+        video_preview_image_urls = [video_object["preferred_thumbnail"]["image"]["uri"]]
       elsif video_object_array.nil?
         video_object_url_subsearch = video_object
         video_object_url_subsearch = video_object["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
-        video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+        video_urls = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+        video_urls = [video_urls]
 
-        video_preview_image_url = video_object["preferred_thumbnail"]["image"]["uri"]
+        video_preview_image_urls = [video_object["preferred_thumbnail"]["image"]["uri"]]
+      elsif video_object_array.count > 1 # Multiple videos
+        video_urls = []
+        video_preview_image_urls = []
+        video_object_array.each do |video_object|
+          possible_subsearch = video_object.dig("media", "video_grid_renderer", "video")
+          video_object = video_object.dig("media", "video_grid_renderer", "video") unless possible_subsearch.nil?
+          if video_object.has_key?("videoDeliveryResponseFragment") && !video_object["videoDeliveryResponseFragment"].nil?
+            progressive_urls_wrapper = video_object["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
+            video_urls << progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
+          else
+            video_object_url_subsearch = video_object["videoDeliveryLegacyFields"] if video_object.has_key?("videoDeliveryLegacyFields")
+            video_urls << video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+          end
+
+          video_preview_image_urls << video_object["preferred_thumbnail"]["image"]["uri"]
+        end
       else
         video_urls = video_object_array.map do |video_object|
           video_object_url_subsearch = video_object["media"]["video_grid_renderer"]["video"]
           video_object_url_subsearch = video_object_url_subsearch["videoDeliveryLegacyFields"] if video_object_url_subsearch.has_key?("videoDeliveryLegacyFields")
-          video_url = video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
+          video_object_url_subsearch["browser_native_hd_url"] || video_object_url_subsearch["browser_native_sd_url"]
         end
 
         video_preview_image_urls = video_object_array.map do |video_object|
@@ -442,7 +463,6 @@ module Forki
         end
       end
 
-      video_url = "" if video_url.nil?
       video_urls = [] if video_urls.nil?
 
       post_details = {
@@ -451,17 +471,15 @@ module Forki
         num_shares: share_count_object.fetch("count", nil),
         num_views: view_count,
         reshare_warning: reshare_warning,
-        video_preview_image_url: video_preview_image_url,
         video_preview_image_urls: video_preview_image_urls,
-        video_url: video_url,
         video_urls: video_urls,
         text: text,
         created_at: creation_date,
         profile_link: story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true
       }
-      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_files] = video_preview_image_urls.map { |url| Forki.retrieve_media(url) }
+      post_details[:video_files] = video_urls.map { |url| Forki.retrieve_media(url) }
       post_details[:reactions] = reaction_counts
 
       post_details
@@ -500,22 +518,25 @@ module Forki
         video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
       end
 
+      video_urls = [video_url]
+      video_preview_image_urls = [video_object["video"]["preferred_thumbnail"]["image"]["uri"]]
+
       post_details = {
         id: video_object["id"],
         num_comments: num_comments,
         num_shares: share_count_object.fetch("count", nil),
         num_views: feedback_object["video_view_count"],
         reshare_warning: feedback_object["should_show_reshare_warning"],
-        video_preview_image_url: video_object["video"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: video_url,
+        video_preview_image_urls: video_preview_image_urls,
+        video_urls: video_urls,
         text: text,
         created_at: video_object["video"]["publish_time"],
         profile_link: sidepane_object["tahoe_sidepane_renderer"]["video"]["creation_story"]["comet_sections"]["actor_photo"]["story"]["actors"][0]["url"],
         has_video: true
       }
 
-      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_files] = video_preview_image_urls.map { |url| Forki.retrieve_media(url) }
+      post_details[:video_files] = video_urls.map { |url| Forki.retrieve_media(url) }
       post_details[:reactions] = reaction_counts
       post_details
     end
@@ -649,22 +670,27 @@ module Forki
         reaction_counts = extract_reaction_counts(creation_story_object["feedback"]["top_reactions"])
       end
 
+      video_url = (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\")
+      video_urls = [video_url]
+
+      video_preview_image_urls = [media_object["preferred_thumbnail"]["image"]["uri"]]
+
       post_details = {
         id: video_object["id"],
         num_comments: creation_story_object["feedback"]["total_comment_count"],
         num_shares: nil, # Not present for watch feed videos?
         num_views: creation_story_object["feedback"]["video_view_count_renderer"]["feedback"]["video_view_count"],
         reshare_warning: creation_story_object["feedback"]["should_show_reshare_warning"],
-        video_preview_image_url: video_object["video"]["story"]["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\"),
+        video_preview_image_urls: video_preview_image_urls,
+        video_urls: video_urls,
         text: (creation_story_object["creation_story"]["message"] || {})["text"],
         created_at: video_object["video"]["story"]["attachments"][0]["media"]["publish_time"],
         profile_link: video_permalink[..video_permalink.index("/videos")],
         has_video: true
       }
 
-      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_files] = video_preview_image_files.map { |url| Forki.retrieve_media(url) }
+      post_details[:video_files] = video_files.map { |url| Forki.retrieve_media(url) }
       post_details[:reactions] = reaction_counts
       post_details
     end
@@ -681,22 +707,25 @@ module Forki
         reaction_counts = extract_reaction_counts(creation_story_object["feedback_context"]["feedback_target_with_context"]["top_reactions"])
       end
 
+      video_preview_image_urls = [creation_story_object["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"]]
+      video_urls = [(media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\")]
+
       post_details = {
         id: creation_story_object["shareable"]["id"],
         num_comments: creation_story_object["feedback_context"]["feedback_target_with_context"]["total_comment_count"],
         num_shares: nil,
         num_views: find_number_of_views, # as far as I can tell, this is never present for live videos
         reshare_warning: creation_story_object["feedback_context"]["feedback_target_with_context"]["should_show_reshare_warning"],
-        video_preview_image_url: creation_story_object["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"],
-        video_url: (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\"),
+        video_preview_image_urls: video_preview_image_urls,
+        video_urls: video_urls,
         text: creation_story_object["attachments"][0]["media"]["savable_description"]["text"],
         created_at: creation_story_object["attachments"][0]["media"]["publish_time"],
         profile_link: video_permalink[..video_permalink.index("/videos")],
         has_video: true
       }
 
-      post_details[:video_preview_image_file] = Forki.retrieve_media(post_details[:video_preview_image_url])
-      post_details[:video_file] = Forki.retrieve_media(post_details[:video_url])
+      post_details[:video_preview_image_files] = video_preview_image_files.map { |url| Forki.retrieve_media(url) }
+      post_details[:video_files] = video_files.map { |url| Forki.retrieve_media(url) }
       post_details[:reactions] = reaction_counts
       post_details
     end

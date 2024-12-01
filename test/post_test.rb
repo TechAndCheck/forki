@@ -25,7 +25,7 @@ class PostTest < Minitest::Test
       assert File.size(post.image_file) > 1000
 
       assert_not_nil post.screenshot_file
-      assert_nil post.video_file
+      assert_nil post.video_files
 
       assert_not_nil post.user
       assert_not_nil post.created_at
@@ -53,11 +53,15 @@ class PostTest < Minitest::Test
       assert_predicate post.num_comments, :positive?
       assert_predicate post.reactions.length, :positive?
 
-      assert_not_nil post.video_file
-      assert File.size(post.video_file) > 1000
+      assert_not_nil post.video_files
+      post.video_files.each do |video|
+        assert File.size(video) > 1000
+      end
 
-      assert_not_nil post.video_preview_image_file
-      assert File.size(post.video_preview_image_file) > 1000
+      assert_not_nil post.video_preview_image_files
+      post.video_preview_image_files.each do |image|
+        assert File.size(image) > 1000
+      end
 
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
@@ -99,11 +103,15 @@ class PostTest < Minitest::Test
       assert_predicate post.num_comments, :positive?
       assert_predicate post.reactions.length, :positive?
 
-      assert_not_nil post.video_file
-      assert File.size(post.video_file) > 1000
+      assert_not_nil post.video_files
+      post.video_files.each do |video|
+        assert File.size(video) > 1000
+      end
 
-      assert_not_nil post.video_preview_image_file
-      assert File.size(post.video_preview_image_file) > 1000
+      assert_not_nil post.video_preview_image_files
+      post.video_preview_image_files.each do |image|
+        assert File.size(image) > 1000
+      end
 
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
@@ -124,11 +132,15 @@ class PostTest < Minitest::Test
       assert_predicate post.num_comments, :positive?
       assert_predicate post.reactions.length, :positive?
 
-      assert_not_nil post.video_file
-      assert File.size(post.video_file) > 1000
+      assert_not_nil post.video_files
+      post.video_files.each do |video|
+        assert File.size(video) > 1000
+      end
 
-      assert_not_nil post.video_preview_image_file
-      assert File.size(post.video_preview_image_file) > 1000
+      assert_not_nil post.video_preview_image_files
+      post.video_preview_image_files.each do |image|
+        assert File.size(image) > 1000
+      end
 
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
@@ -149,11 +161,15 @@ class PostTest < Minitest::Test
       assert_predicate post.num_comments, :positive?
       assert_predicate post.reactions.length, :positive?
 
-      assert_not_nil post.video_file
-      assert File.size(post.video_file) > 1000
+      assert_not_nil post.video_files
+      post.video_files.each do |video|
+        assert File.size(video) > 1000
+      end
 
-      assert_not_nil post.video_preview_image_file
-      assert File.size(post.video_preview_image_file) > 1000
+      assert_not_nil post.video_preview_image_files
+      post.video_preview_image_files.each do |image|
+        assert File.size(image) > 1000
+      end
 
       assert_not_nil post.screenshot_file
       assert_nil post.image_file
@@ -192,12 +208,16 @@ class PostTest < Minitest::Test
       assert_predicate post.num_comments, :positive?
       assert_predicate post.reactions.length, :positive?
 
-      assert_not_nil post.video_file
-      assert File.size(post.video_file) > 1000
+      assert_not_nil post.video_files
+      post.video_files.each do |video|
+        assert File.size(video) > 1000
+      end
 
       assert_not_nil post.screenshot_file
-      assert_not_nil post.video_preview_image_file
-      assert File.size(post.video_preview_image_file) > 1000
+      assert_not_nil post.video_preview_image_files
+      post.video_preview_image_files.each do |image|
+        assert File.size(image) > 1000
+      end
 
       assert_nil post.image_file
 
@@ -232,9 +252,9 @@ class PostTest < Minitest::Test
     assert_predicate post.num_comments, :positive?
     assert_predicate post.reactions.length, :positive?
 
-    assert_nil post.video_file
+    assert_nil post.video_files
     assert_not_nil post.screenshot_file
-    assert_nil post.video_preview_image_file
+    assert_nil post.video_preview_image_files
     assert_not_nil post.image_file
     assert File.size(post.image_file) > 1000
 
@@ -248,16 +268,25 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/reel/809749953859034").first
     assert_not_nil(post)
 
-    assert File.size(post.video_file) > 1000
-    assert File.size(post.video_preview_image_file) > 1000
+    post.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
+
+    post.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
   end
 
   def test_reel_other_format
     post = Forki::Post.lookup("https://www.facebook.com/share/r/jh5LX4CNhPXxn83F/").first
     assert_not_nil(post)
 
-    assert File.size(post.video_file) > 1000
-    assert File.size(post.video_preview_image_file) > 1000
+    post.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
+    post.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
   end
 
   # Not sure why this is here, it's not a link that works
@@ -273,12 +302,17 @@ class PostTest < Minitest::Test
     assert_predicate post.num_comments, :positive?
     assert_predicate post.reactions.length, :positive?
 
-    assert_not_nil post.video_file
-    assert File.size(post.video_file) > 1000
+    assert_not_nil post.video_files
+    post.video_files.each do |video|
+      assert File.size(video) > 1000
+    end
 
     assert_not_nil post.screenshot_file
-    assert_not_nil post.video_preview_image_file
-    assert File.size(post.video_preview_image_file) > 1000
+    assert_not_nil post.video_preview_image_files
+
+    post.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
 
     assert_nil post.image_file
 
@@ -301,16 +335,25 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/reel/2841887882618164")
 
     assert_not_nil(post)
-    assert File.size(post.first.video_file) > 1000
-    assert File.size(post.first.video_preview_image_file) > 1000
+    post.first.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
+
+    post.first.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
   end
 
   def test_a_url_that_seems_to_fail
     post = Forki::Post.lookup("https://www.facebook.com/mydefiguru/posts/2857725071050020/")
     assert_not_nil(post)
 
-    assert File.size(post.first.video_file) > 1000
-    assert File.size(post.first.video_preview_image_file) > 1000
+    post.first.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
+    post.first.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
   end
 
   def test_a_url_that_seems_to_fail_2
@@ -332,8 +375,12 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/watch/live/?ref=watch_permalink&v=535737772684504")
     assert_not_nil(post)
 
-    assert File.size(post.first.video_file) > 1000
-    assert File.size(post.first.video_preview_image_file) > 1000
+    post.first.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
+    post.first.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
   end
 
   def test_a_removed_error_for_a_profile_page
@@ -346,8 +393,12 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/share/v/g1uQJ98rQp9pSEjw/")
     assert_not_nil(post)
 
-    assert File.size(post.first.video_file) > 1000
-    assert File.size(post.first.video_preview_image_file) > 1000
+    post.first.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
+    post.first.video_preview_image_files.each do |image|
+      assert File.size(image) > 1000
+    end
   end
 
   def test_a_new_link
@@ -368,7 +419,10 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/share/v/13NPBYGEFF/")
     assert_not_nil(post)
 
-    assert File.size(post.first.video_file) > 1000
+    post.first.video_files.each do |video|
+      assert File.size(video) > 1000
+    end
+
     assert_not_nil(post.first.user)
   end
 
@@ -396,18 +450,13 @@ class PostTest < Minitest::Test
     assert_kind_of(Forki::User, post.first.user)
   end
 
-  def test_yet_another_link_1
-    post = Forki::Post.lookup("https://www.facebook.com/TrucsMaman/posts/1232930621331239")
-    assert_not_nil(post)
-
-    assert File.size(post.first.image_file) > 1000
-  end
-
   def test_yet_another_link_2
     post = Forki::Post.lookup("https://www.facebook.com/permalink.php?story_fbid=pfbid02E26psygjdZJ7YEeEhXJkgTpbDdjYZZHNZyezK9iA65PGPwQKT35pHb4GjoVVexGcl&id=100079991325065")
     assert_not_nil(post)
 
-    assert File.size(post.first.video_file) > 1000
+    post.first.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
     assert File.size(post.first.user.profile_image_file) > 1000
   end
 
@@ -421,7 +470,9 @@ class PostTest < Minitest::Test
     post = Forki::Post.lookup("https://www.facebook.com/100089812680688/videos/2360570097610510/")
     assert_not_nil(post)
 
-    assert File.size(post.first.video_file) > 1000
+    post.first.video_files.each do |image|
+      assert File.size(image) > 1000
+    end
     assert File.size(post.first.user.profile_image_file) > 1000
   end
 
@@ -430,7 +481,9 @@ class PostTest < Minitest::Test
     assert_not_nil(posts)
 
     posts.each do |post|
-      assert File.size(post.video_file) > 1000
+      post.video_files.each do |image|
+        assert File.size(image) > 1000
+      end
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
     end

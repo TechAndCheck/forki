@@ -19,11 +19,8 @@ module Forki
                 :text,
                 :created_at,
                 :user,
-                :video_file,
                 :video_files,
-                :video_preview_image_file,
                 :video_preview_image_files,
-                :video_preview_image_url,
                 :video_preview_image_urls,
                 :screenshot_file
 
@@ -44,11 +41,8 @@ module Forki
       @text = post_hash[:text]
       @created_at = post_hash[:created_at]
       @user = post_hash[:user]
-      @video_file = post_hash[:video_file]
       @video_files = post_hash[:video_files]
-      @video_preview_image_file = post_hash[:video_preview_image_file]
       @video_preview_image_files = post_hash[:video_preview_image_files]
-      @video_preview_image_url = post_hash[:video_preview_image_url]
       @video_preview_image_urls = post_hash[:video_preview_image_urls]
       @screenshot_file = post_hash[:screenshot_file]
     end

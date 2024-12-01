@@ -26,14 +26,15 @@ class VideoSieveReelTest < Minitest::Test
     assert_equal 8100, result[:num_shared]
     assert_nil result[:num_views]
     assert_equal true, result[:reshare_warning]
-    assert_not_nil result[:video_preview_image_url]
+    assert_not_nil result[:video_preview_image_urls]
+    assert_not result[:video_preview_image_urls].empty?
     assert_not_nil result[:video_url]
     assert_nil result[:text]
     assert_equal 1689646427, result[:created_at]
     assert_equal "https://www.facebook.com/cathy.christian.9889", result[:profile_link]
     assert_equal true, result[:has_video]
-    assert_not_nil result[:video_preview_image_file]
-    assert_not_nil result[:video_file]
+    assert_not_nil result[:video_preview_image_files]
+    assert_not_nil result[:video_files]
     assert_nil result[:reactions]
   end
 end
