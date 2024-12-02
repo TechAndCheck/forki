@@ -289,11 +289,6 @@ class PostTest < Minitest::Test
     end
   end
 
-  # Not sure why this is here, it's not a link that works
-  # def test_another_link
-  #   Forki::Post.lookup("https://www.facebook.com/manuelbuffa84/posts/pfbid02uqbifnKoRhW6Z9T1EBNXAnH5uyn9khWjPtfUYZPrLfkdjxtpTqpj521doA6Aa51ol")
-  # end
-
   def test_another_link_2
     post = Forki::Post.lookup("https://www.facebook.com/bonifacemusavulivh/posts/1800353787146024/").first
 
@@ -362,14 +357,6 @@ class PostTest < Minitest::Test
 
     assert File.size(post.first.image_file) > 1000
   end
-
-  # NOTE: This does fail, because it's gone'
-  # def test_a_url_that_seems_to_fail_3
-  #   post = Forki::Post.lookup("https://www.facebook.com/share/p/19JjhuYDjy/")
-  #   assert_not_nil(post)
-
-  #   assert File.size(post.first.image_file) > 1000
-  # end
 
   def test_a_video_without_text_works
     post = Forki::Post.lookup("https://www.facebook.com/watch/live/?ref=watch_permalink&v=535737772684504")
@@ -500,6 +487,21 @@ class PostTest < Minitest::Test
 
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
+    end
+  end
+
+  def test_a_reel_with_text_works
+    posts = Forki::Post.lookup("https://www.facebook.com/watch/?v=1264952764841420&ref=sharing")
+    assert_not_nil(posts)
+
+    posts.each do |post|
+      post.video_files.each do |image|
+        assert File.size(image) > 1000
+      end
+
+      assert File.size(post.user.profile_image_file) > 1000
+      assert_not_nil(post.created_at)
+      assert !post.text.blank?
     end
   end
 end

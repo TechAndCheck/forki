@@ -40,6 +40,9 @@ class VideoSieveWatchTab < VideoSieve
 
   def self.sieve(graphql_objects)
     video_object = self.extractor(graphql_objects)
+    title_object = self.extract_title_object(graphql_objects)
+
+    text = title_object.dig("text")
 
     video_url = video_object["attachments"]&.first.dig("media", "browser_native_sd_url")
 
@@ -104,7 +107,7 @@ class VideoSieveWatchTab < VideoSieve
       reshare_warning: feedback_object["should_show_reshare_warning"],
       video_preview_image_urls: video_preview_image_urls,
       video_url: video_url,
-      text: nil, # There is no text associated with these videos
+      text: text, # There is no text associated with these videos
       created_at: video_object["attachments"].first["media"]["publish_time"],
       profile_link: profile_link,
       has_video: true,
@@ -126,5 +129,12 @@ private
     story = video_objects.first.dig("video", "story") if story.nil?
 
     story
+  end
+
+  def self.extract_title_object(graphql_objects)
+    attachment_objects = graphql_objects.filter do |go|
+      go.has_key?("attachments")
+    end
+    attachment_objects.first&.dig("attachments")&.first.dig("media", "title")
   end
 end
