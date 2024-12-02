@@ -39,6 +39,8 @@ class VideoSieveReel2 < VideoSieve
   def self.sieve(graphql_objects)
     video_object = self.extractor(graphql_objects)
 
+    text = extract_text_object(video_object)
+
     feedback_object = graphql_objects.filter do |go|
       go = go.first if go.kind_of?(Array) && !go.empty?
       !go.dig("feedback", "total_comment_count").nil?
@@ -73,7 +75,7 @@ class VideoSieveReel2 < VideoSieve
       reshare_warning: reshare_warning,
       video_preview_image_urls: video_preview_image_urls,
       video_url: video_url,
-      text: nil, # Reels don't have text
+      text: text, # Reels don't have text
       created_at: video_object["creation_time"],
       profile_link: video_object["short_form_video_context"]["video_owner"]["url"],
       has_video: true,
@@ -92,5 +94,10 @@ private
     end
 
     video_objects.first.dig("video", "creation_story")
+  end
+
+  def self.extract_text_object(video_object)
+    text = video_object.dig("message", "text")
+    text
   end
 end

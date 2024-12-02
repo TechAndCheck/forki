@@ -40,9 +40,7 @@ class VideoSieveWatchTab < VideoSieve
 
   def self.sieve(graphql_objects)
     video_object = self.extractor(graphql_objects)
-    title_object = self.extract_title_object(graphql_objects)
-
-    text = title_object.dig("text")
+    text = self.extract_text_object(graphql_objects)
 
     video_url = video_object["attachments"]&.first.dig("media", "browser_native_sd_url")
 
@@ -131,10 +129,19 @@ private
     story
   end
 
-  def self.extract_title_object(graphql_objects)
+  def self.extract_text_object(graphql_objects)
     attachment_objects = graphql_objects.filter do |go|
       go.has_key?("attachments")
     end
-    attachment_objects.first&.dig("attachments")&.first.dig("media", "title")
+
+    attachment_object = attachment_objects.first&.dig("attachments")&.first&.dig("media")
+    return nil if attachment_object.nil?
+
+    text = attachment_object.dig("title", "text")
+    if text.blank?
+      text = attachment_object.dig("creation_story", "comet_sections", "message", "story", "message", "text")
+    end
+
+    text
   end
 end

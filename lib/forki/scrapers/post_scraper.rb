@@ -46,6 +46,7 @@ module Forki
       end
     end
 
+
     def get_graphql_objects(graphql_strings)
       graphql_strings.map { |graphql_object| JSON.parse(graphql_object) }
     end
