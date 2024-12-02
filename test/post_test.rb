@@ -488,4 +488,18 @@ class PostTest < Minitest::Test
       assert_not_nil(post.created_at)
     end
   end
+
+  def test_multiple_media_works
+    posts = Forki::Post.lookup("https://www.facebook.com/permalink.php?story_fbid=pfbid0cyi7b2rwTt6YPQEgeX25A2JjwPgPdKXQwyRPbbcyBwnMRN7sv1RtGhtSjaBbxW6Vl&id=100083121696541")
+    assert_not_nil(posts)
+
+    posts.each do |post|
+      post.video_files.each do |image|
+        assert File.size(image) > 1000
+      end
+
+      assert File.size(post.user.profile_image_file) > 1000
+      assert_not_nil(post.created_at)
+    end
+  end
 end

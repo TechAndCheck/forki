@@ -360,8 +360,7 @@ module Forki
         video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["short_form_video_context"]["playback_video"]
         creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["creation_time"]
       elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("all_subattachments")
-        # TODO: This is for multiple videos, which this scraper doesn't suport yet, but the others do
-        # go through the other scrapers and copy the format'
+        # We can probably remove this since it's now in a sieve, but i'm not going to yet for sanity
         video_object = {} # Set this nil so the other code doesn't break, but we can check later
         video_object_array = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["all_subattachments"]["nodes"]
         creation_date = story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"][0]["story"]["creation_time"]
