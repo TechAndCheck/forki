@@ -547,4 +547,19 @@ class PostTest < Minitest::Test
       assert !post.text.blank?
     end
   end
+
+  def test_a_story_with_text_works
+    posts = Forki::Post.lookup("https://www.facebook.com/story.php?story_fbid=1030902039049039&id=100063877580761&rdid=RJFker66mGyRjSxG")
+    assert_not_nil(posts)
+
+    posts.each do |post|
+      post.video_files.each do |image|
+        assert File.size(image) > 1000
+      end
+
+      assert File.size(post.user.profile_image_file) > 1000
+      assert_not_nil(post.created_at)
+      assert !post.text.blank?
+    end
+  end
 end

@@ -346,7 +346,7 @@ module Forki
 
       return extract_video_post_data_alternative(graphql_object_array) if story_node_object.nil?
 
-      if story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("media")
+      if story_node_object["comet_sections"]["content"]["story"]["attachments"].first&.dig("styles", "attachment")&.key?("media")
         media_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]
         if media_object.has_key?("video")
           video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]["video"]
@@ -356,15 +356,18 @@ module Forki
 
         creation_date = video_object["publish_time"] if video_object&.has_key?("publish_time")
         creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["media"]["publish_time"] if creation_date.nil?
-      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("style_infos")
+      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first&.dig("styles", "attachment")&.key?("style_infos")
         # For "Reels" we need a separate way to parse this
         video_object = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["short_form_video_context"]["playback_video"]
         creation_date = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["style_infos"].first["fb_shorts_story"]["creation_time"]
-      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"].key?("all_subattachments")
+      elsif story_node_object["comet_sections"]["content"]["story"]["attachments"].first&.dig("styles", "attachment")&.key?("all_subattachments")
         # We can probably remove this since it's now in a sieve, but i'm not going to yet for sanity
         video_object = {} # Set this nil so the other code doesn't break, but we can check later
         video_object_array = story_node_object["comet_sections"]["content"]["story"]["attachments"].first["styles"]["attachment"]["all_subattachments"]["nodes"]
         creation_date = story_node_object["comet_sections"]["context_layout"]["story"]["comet_sections"]["metadata"][0]["story"]["creation_time"]
+      elsif story_node_object.dig("comet_sections", "content", "story", "comet_sections", "attached_story", "story", "attached_story", "comet_sections", "attached_story_layout", "story", "attachments")&.first&.dig("styles", "attachment", "media", "videoDeliveryLegacyFields")
+        video_object = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["attached_story"]["story"]["attached_story"]["comet_sections"]["attached_story_layout"]["story"]["attachments"].first["styles"]["attachment"]["media"]
+        creation_date = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["attached_story"]["story"]["attached_story"]["comet_sections"]["attached_story_layout"]["story"]["attachments"].first["styles"]["attachment"]["media"]["publish_time"]
       else
         raise "Unable to parse video object" if video_objects.empty?
       end
