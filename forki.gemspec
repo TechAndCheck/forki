@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "zorki" # For scraping instagram pages
 
   spec.add_development_dependency "thor" # For the generator
-
+  spec.add_development_dependency "solargraph" # For the language server
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
 end

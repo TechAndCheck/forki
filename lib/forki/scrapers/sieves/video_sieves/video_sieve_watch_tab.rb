@@ -138,7 +138,7 @@ private
     return nil if attachment_object.nil?
 
     text = attachment_object.dig("title", "text")
-    if text.blank?
+    if text&.empty?
       text = attachment_object.dig("creation_story", "comet_sections", "message", "story", "message", "text")
     end
 

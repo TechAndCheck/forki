@@ -117,6 +117,7 @@ module Forki
 
             # Another version I guess
             return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "media", "large_share_image")&.dig("uri").nil?
+            return true unless graphql_object["node"]["comet_sections"]["content"]["story"]["attachments"].first.dig("styles", "attachment", "media", "comet_photo_attachment_resolution_renderer", "image", "uri").nil?
           end
         end
 
@@ -284,6 +285,7 @@ module Forki
         created_at: created_at,
         has_video: has_video
       }
+
       post_details[:image_file] = []
       post_details[:reactions] = reaction_counts
       post_details
@@ -586,7 +588,13 @@ module Forki
           if image_url.nil?
             image_url = attachments.first&.dig("styles", "attachment", "media", "image", "uri")
           end
+
+          if image_url.nil?
+            image_url = attachments.first&.dig("styles", "attachment", "media", "comet_photo_attachment_resolution_renderer", "image", "uri")
+          end
         end
+
+        raise ForkiUnhandledContentError if image_url.nil?
 
         text = graphql_object["node"]["comet_sections"]["content"]["story"].dig("message", "text")
         text = "" if text.nil?
@@ -766,14 +774,14 @@ module Forki
       post_data = {}
 
       # Occasionally there will be a post that's public, but an account isn't and you need to login first
-      2.times do
+      2.times do |i|
         validate_and_load_page(url)
         graphql_strings = find_graphql_data_strings(page.html)
 
         post_data = extract_post_data(graphql_strings)
-        break if post_data[:profile_link].present?
+        break unless post_data[:profile_link].respond_to?(:empty?) ? post_data[:profile_link].empty? : !post_data[:profile_link]
 
-        login
+        login if i.zero?
       end
 
       post_data[:url] = url
@@ -788,7 +796,7 @@ module Forki
       end
 
       # page.quit # Close browser between page navigation to prevent cache folder access issues
-      post_data[:user] = post_data[:profile_link].present? ? User.lookup(post_data[:profile_link])&.first : nil
+      post_data[:user] = (post_data[:profile_link].nil? || post_data[:profile_link].empty?) ? nil : User.lookup(post_data[:profile_link])&.first
       logout if self.logged_in
       page.quit
 

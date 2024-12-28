@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    forki (0.2.14)
+    forki (0.2.36)
       apparition
       capybara
       oj
@@ -36,7 +36,9 @@ GEM
       capybara (~> 3.13, < 4)
       websocket-driver (>= 0.6.5)
     ast (2.4.2)
+    backport (1.2.0)
     base64 (0.2.0)
+    benchmark (0.4.0)
     bigdecimal (3.1.8)
     builder (3.2.4)
     byebug (11.1.3)
@@ -52,15 +54,22 @@ GEM
     concurrent-ruby (1.2.2)
     crass (1.0.6)
     curb (1.0.5)
+    diff-lcs (1.5.1)
     dotenv (2.7.6)
+    e2mmap (0.1.0)
     erubi (1.12.0)
     ethon (0.16.0)
       ffi (>= 1.15.0)
     ffi (1.17.0-arm64-darwin)
     i18n (1.13.0)
       concurrent-ruby (~> 1.0)
+    jaro_winkler (1.6.0)
     json (2.6.3)
-    logger (1.6.1)
+    kramdown (2.5.1)
+      rexml (>= 3.3.9)
+    kramdown-parser-gfm (1.1.0)
+      kramdown (~> 2.0)
+    logger (1.6.2)
     loofah (2.21.3)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
@@ -70,10 +79,10 @@ GEM
     minitest (5.25.1)
     nokogiri (1.15.1-arm64-darwin)
       racc (~> 1.4)
-    oj (3.16.6)
+    oj (3.16.7)
       bigdecimal (>= 3.0)
       ostruct (>= 0.2)
-    ostruct (0.6.0)
+    ostruct (0.6.1)
     parallel (1.23.0)
     parser (3.2.2.1)
       ast (~> 2.4.1)
@@ -96,7 +105,10 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.1.1)
     rake (13.0.6)
+    rbs (2.8.4)
     regexp_parser (2.8.0)
+    reverse_markdown (2.1.1)
+      nokogiri
     rexml (3.3.9)
     rubocop (1.51.0)
       json (~> 2.3)
@@ -134,7 +146,7 @@ GEM
       rubocop-rails (~> 2.0)
     ruby-progressbar (1.13.0)
     rubyzip (2.3.2)
-    selenium-devtools (0.129.0)
+    selenium-devtools (0.131.0)
       selenium-webdriver (~> 4.2)
     selenium-webdriver (4.25.0)
       base64 (~> 0.2)
@@ -142,7 +154,24 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
+    solargraph (0.50.0)
+      backport (~> 1.2)
+      benchmark
+      bundler (~> 2.0)
+      diff-lcs (~> 1.4)
+      e2mmap
+      jaro_winkler (~> 1.5)
+      kramdown (~> 2.3)
+      kramdown-parser-gfm (~> 1.1)
+      parser (~> 3.0)
+      rbs (~> 2.0)
+      reverse_markdown (~> 2.0)
+      rubocop (~> 1.38)
+      thor (~> 1.0)
+      tilt (~> 2.0)
+      yard (~> 0.9, >= 0.9.24)
     thor (1.2.2)
+    tilt (2.5.0)
     typhoeus (1.4.1)
       ethon (>= 0.9.0)
     tzinfo (2.0.6)
@@ -154,6 +183,7 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
+    yard (0.9.37)
     zeitwerk (2.6.8)
     zorki (0.2.8)
       apparition
@@ -178,6 +208,7 @@ DEPENDENCIES
   rubocop (~> 1.7)
   rubocop-rails (~> 2.17.3)
   rubocop-rails_config
+  solargraph
   thor
 
 BUNDLED WITH

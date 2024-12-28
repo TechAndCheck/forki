@@ -176,7 +176,7 @@ class PostTest < Minitest::Test
 
       assert_not_nil post.user
       assert_not_nil post.created_at
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 
@@ -224,7 +224,7 @@ class PostTest < Minitest::Test
 
       assert_not_nil post.user
       assert_not_nil post.created_at
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 
@@ -263,7 +263,7 @@ class PostTest < Minitest::Test
 
     assert_not_nil post.user
     assert_not_nil post.created_at
-    assert !post.text.blank?
+    assert !post.text&.empty?
   end
 
   def test_reel
@@ -279,7 +279,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
 
-    assert post.text.blank? # This has none
+    assert post.text&.empty? # This has none
   end
 
   def test_reel_other_format
@@ -293,7 +293,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
 
-    assert !post.text.blank?
+    assert !post.text&.empty?
   end
 
   def test_another_link_2
@@ -320,20 +320,20 @@ class PostTest < Minitest::Test
 
     assert_not_nil post.user
     assert_not_nil post.created_at
-    assert !post.text.blank?
+    assert !post.text&.empty?
   end
 
   def test_another_link_3
     post = Forki::Post.lookup("https://www.facebook.com/icheck.tn/posts/pfbid02VmRj1WEajyKJVHnQxiuDDjGAJr3h1RHWekp1Z3a999RpBjat9d1XJAww999rLzUvl")
     assert File.size(post.first.image_file) > 1000
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_pure_text_link
     post = Forki::Post.lookup("https://www.facebook.com/TobiszowskiGrzegorz/posts/pfbid09xYce8UagCCFqZLFqqM5SqnuwoKCA4tW5XSUQsEHJL5XHJAgpvjkFxK1BaxsmhEul")
     assert !post.first.text.empty?
     assert_predicate post.first.text.length, :positive?
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_an_alternative_reel
@@ -348,7 +348,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
 
-    assert post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_url_that_seems_to_fail
@@ -361,7 +361,7 @@ class PostTest < Minitest::Test
     post.first.video_preview_image_files.each do |image|
       assert File.size(image) > 1000
     end
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_url_that_seems_to_fail_2
@@ -369,10 +369,10 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
 
     assert File.size(post.first.image_file) > 1000
-    assert post.first.text.blank? # No text
+    assert post.first.text&.empty? # No text
   end
 
-  def test_a_video_without_text_works
+  def test_a_watch_video_puts_the_title_in_as_text
     post = Forki::Post.lookup("https://www.facebook.com/watch/live/?ref=watch_permalink&v=535737772684504")
     assert_not_nil(post)
 
@@ -383,7 +383,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
 
-    assert post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_removed_error_for_a_profile_page
@@ -403,7 +403,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
 
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_new_link
@@ -411,7 +411,7 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
 
     assert File.size(post.first.image_file) > 1000
-    assert post.first.text.blank?
+    assert post.first.text.empty?
   end
 
   def test_a_shared_plugin_link_can_be_scraped
@@ -419,7 +419,7 @@ class PostTest < Minitest::Test
     assert_not_nil(post)
 
     assert File.size(post.first.image_file) > 1000
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_share_link_works
@@ -431,7 +431,7 @@ class PostTest < Minitest::Test
     end
 
     assert_not_nil(post.first.user)
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_post_in_a_group_works
@@ -440,7 +440,7 @@ class PostTest < Minitest::Test
 
     assert File.size(post.first.image_file) > 1000
     assert post.first.user.nil?
-    assert post.first.text.blank? # The post is empty
+    assert post.first.text&.empty? # The post is empty
   end
 
   def test_a_post_has_a_single_user_not_array
@@ -449,7 +449,7 @@ class PostTest < Minitest::Test
 
     assert_not_nil(post.first.user)
     assert_kind_of(Forki::User, post.first.user)
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_post_user_isnt_a_hash
@@ -468,14 +468,14 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
     assert File.size(post.first.user.profile_image_file) > 1000
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_text_message_post
     post = Forki::Post.lookup("https://www.facebook.com/share/p/15BRyTma9f/")
     assert_not_nil(post)
     assert_not_nil(post.first.text)
-    assert !post.first.text.blank?
+    assert !post.first.text&.empty?
   end
 
   def test_a_video_is_actually_downloaded
@@ -486,7 +486,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
     assert File.size(post.first.user.profile_image_file) > 1000
-    assert post.first.text.blank? # No text in the post
+    assert post.first.text&.empty? # No text in the post
   end
 
   def test_multiple_videos_work
@@ -499,7 +499,7 @@ class PostTest < Minitest::Test
       end
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 
@@ -514,7 +514,7 @@ class PostTest < Minitest::Test
 
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 
@@ -529,7 +529,7 @@ class PostTest < Minitest::Test
 
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 
@@ -544,7 +544,7 @@ class PostTest < Minitest::Test
 
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 
@@ -559,7 +559,7 @@ class PostTest < Minitest::Test
 
       assert File.size(post.user.profile_image_file) > 1000
       assert_not_nil(post.created_at)
-      assert !post.text.blank?
+      assert !post.text&.empty?
     end
   end
 end
