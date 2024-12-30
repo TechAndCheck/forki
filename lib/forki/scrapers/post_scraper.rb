@@ -80,7 +80,15 @@ module Forki
         next unless graphql_object.dig("node", "sponsored_data").nil? # Ads sneak in too but don't mark as feed
 
         result = graphql_object.dig("node", "comet_sections", "content")&.to_s&.include?("videoDeliveryLegacyFields")
-        result = false if result.nil? # If the above line returns nil, set it to false
+        # This field can exist but be nil, so we need to check for that
+        if result == true
+          result = false
+          result = true unless graphql_object.dig("node", "comet_sections", "content", "story", "attachments")&.first&.dig("styles", "attachment", "media", "videoDeliveryLegacyFields").nil?
+          result = true unless graphql_object.dig("node", "comet_sections", "content", "story", "attachments")&.first&.dig("styles", "attachment", "all_subattachments", "nodes")&.first&.dig("media", "video_grid_renderer", "video", "videoDeliveryLegacyFields").nil?
+          result = true unless graphql_object.dig("node", "comet_sections", "content", "story", "comet_sections", "attached_story", "story", "attached_story", "comet_sections", "attached_story_layout", "story", "attachments")&.first&.dig("styles", "attachment", "media", "videoDeliveryLegacyFields").nil?
+        end
+
+        result = false if result.nil? # If the above line returns nil, set it to false THIS MIGHT NOT BE NECESSARY
         result = graphql_object.key?("is_live_streaming") && graphql_object["is_live_streaming"] == true if result == false
         result = graphql_object.key?("video") if result == false
         result = check_if_post_is_reel(graphql_object) if result == false
@@ -336,7 +344,7 @@ module Forki
       graphql_object_array = graphql_strings.map { |graphql_string| JSON.parse(graphql_string) }
 
       # Once in awhile it's really easy
-      video_objects = graphql_object_array.filter { |go| go.has_key?("video") }
+      video_object = graphql_object_array.filter { |go| go.has_key?("video") }
 
       if VideoSieve.can_process_with_sieve?(graphql_object_array)
         # Eventually all of this complexity will be replaced with this
@@ -370,10 +378,9 @@ module Forki
       elsif story_node_object.dig("comet_sections", "content", "story", "comet_sections", "attached_story", "story", "attached_story", "comet_sections", "attached_story_layout", "story", "attachments")&.first&.dig("styles", "attachment", "media", "videoDeliveryLegacyFields")
         video_object = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["attached_story"]["story"]["attached_story"]["comet_sections"]["attached_story_layout"]["story"]["attachments"].first["styles"]["attachment"]["media"]
         creation_date = story_node_object["comet_sections"]["content"]["story"]["comet_sections"]["attached_story"]["story"]["attached_story"]["comet_sections"]["attached_story_layout"]["story"]["attachments"].first["styles"]["attachment"]["media"]["publish_time"]
-      else
-        raise "Unable to parse video object" if video_objects.empty?
       end
 
+      raise "Unable to parse video object" if video_object.nil? && (video_object_array.nil? || video_object_array.empty?)
 
       begin
         feedback_object = story_node_object["comet_sections"]["feedback"]["story"]["feedback_context"]["feedback_target_with_context"]["ufi_renderer"]["feedback"]
@@ -468,7 +475,7 @@ module Forki
         end
       end
 
-      video_urls = [] if video_urls.nil?
+      raise Forki::UnhandledContentError if video_urls.nil? || video_urls.empty?
 
       post_details = {
         id: video_object["id"],
@@ -522,6 +529,8 @@ module Forki
         progressive_urls_wrapper = video_object["video"]["videoDeliveryResponseFragment"]["videoDeliveryResponseResult"]
         video_url = progressive_urls_wrapper["progressive_urls"].find_all { |object| !object["progressive_url"].nil? }.last["progressive_url"]
       end
+
+      raise Forki::UnhandledContentError if video_url.nil?
 
       video_urls = [video_url]
       video_preview_image_urls = [video_object["video"]["preferred_thumbnail"]["image"]["uri"]]
@@ -594,7 +603,7 @@ module Forki
           end
         end
 
-        raise ForkiUnhandledContentError if image_url.nil?
+        raise Forki::UnhandledContentError if image_url.nil?
 
         text = graphql_object["node"]["comet_sections"]["content"]["story"].dig("message", "text")
         text = "" if text.nil?
@@ -682,6 +691,8 @@ module Forki
       end
 
       video_url = (media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\")
+      raise Forki::UnhandledContentError if video_url.nil?
+
       video_urls = [video_url]
 
       video_preview_image_urls = [media_object["preferred_thumbnail"]["image"]["uri"]]
@@ -720,6 +731,8 @@ module Forki
 
       video_preview_image_urls = [creation_story_object["attachments"][0]["media"]["preferred_thumbnail"]["image"]["uri"]]
       video_urls = [(media_object.fetch("playable_url_quality_hd", nil) || media_object.fetch("playable_url", nil)).delete("\\")]
+
+      raise Forki::UnhandledContentError if video_urls.empty?
 
       post_details = {
         id: creation_story_object["shareable"]["id"],
@@ -774,11 +787,19 @@ module Forki
       post_data = {}
 
       # Occasionally there will be a post that's public, but an account isn't and you need to login first
+      post_data = nil
       2.times do |i|
         validate_and_load_page(url)
         graphql_strings = find_graphql_data_strings(page.html)
 
-        post_data = extract_post_data(graphql_strings)
+        scraped_post_data = extract_post_data(graphql_strings)
+        if post_data.nil?
+          post_data = scraped_post_data
+        else
+          # TODO: we should make it so that if the profile link is empty, we don't rescrape the entire post
+          post_data[:profile_link] = scraped_post_data[:profile_link]
+        end
+
         break unless post_data[:profile_link].respond_to?(:empty?) ? post_data[:profile_link].empty? : !post_data[:profile_link]
 
         login if i.zero?

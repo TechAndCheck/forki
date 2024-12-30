@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    forki (0.2.36)
+    forki (0.2.37)
       apparition
       capybara
       oj

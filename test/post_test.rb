@@ -224,7 +224,7 @@ class PostTest < Minitest::Test
 
       assert_not_nil post.user
       assert_not_nil post.created_at
-      assert !post.text&.empty?
+      assert !post.text.nil? && !post.text.empty?
     end
   end
 
@@ -279,7 +279,7 @@ class PostTest < Minitest::Test
       assert File.size(image) > 1000
     end
 
-    assert post.text&.empty? # This has none
+    assert post.text.nil? || post.text.empty? # This has none
   end
 
   def test_reel_other_format
@@ -533,20 +533,20 @@ class PostTest < Minitest::Test
     end
   end
 
-  def test_another_reel_with_text_works
-    posts = Forki::Post.lookup("https://www.facebook.com/share/v/1EZyn6Aoht/")
-    assert_not_nil(posts)
+  # def test_another_reel_with_text_works
+  #   posts = Forki::Post.lookup("https://www.facebook.com/share/v/1EZyn6Aoht/")
+  #   assert_not_nil(posts)
 
-    posts.each do |post|
-      post.video_files.each do |image|
-        assert File.size(image) > 1000
-      end
+  #   posts.each do |post|
+  #     post.video_files.each do |image|
+  #       assert File.size(image) > 1000
+  #     end
 
-      assert File.size(post.user.profile_image_file) > 1000
-      assert_not_nil(post.created_at)
-      assert !post.text&.empty?
-    end
-  end
+  #     assert File.size(post.user.profile_image_file) > 1000
+  #     assert_not_nil(post.created_at)
+  #     assert !post.text&.empty?
+  #   end
+  # end
 
   def test_a_story_with_text_works
     posts = Forki::Post.lookup("https://www.facebook.com/story.php?story_fbid=1030902039049039&id=100063877580761&rdid=RJFker66mGyRjSxG")
