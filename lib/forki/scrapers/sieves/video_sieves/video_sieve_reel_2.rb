@@ -46,11 +46,11 @@ class VideoSieveReel2 < VideoSieve
       !go.dig("feedback", "total_comment_count").nil?
     end.first
 
-    reels_feedback_renderer = graphql_objects.filter do |go|
-      go.dig("reels_feedback_renderer")
-    end.first
+    # reels_feedback_renderer = graphql_objects.filter do |go|
+    #   go.dig("reels_feedback_renderer")
+    # end.first
 
-    reels_feedback_renderer["reels_feedback_renderer"]["story"]
+    # reels_feedback_renderer["reels_feedback_renderer"]["story"]
     reshare_warning = video_object["short_form_video_context"]["playback_video"].dig("warning_screen_renderer", "cix_screen", "view_model", "__typename") == "OverlayWarningScreenViewModel"
 
     video_preview_image_urls = [video_object["short_form_video_context"]["playback_video"]["preferred_thumbnail"]["image"]["uri"]]
