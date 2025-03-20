@@ -6,6 +6,7 @@ PATH
       capybara
       oj
       selenium-webdriver
+      semantic_logger
       typhoeus
       zorki
 
@@ -153,6 +154,8 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
+    semantic_logger (4.16.1)
+      concurrent-ruby (~> 1.0)
     solargraph (0.51.2)
       backport (~> 1.2)
       benchmark

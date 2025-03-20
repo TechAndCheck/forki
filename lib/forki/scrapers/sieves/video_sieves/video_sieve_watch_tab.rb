@@ -69,13 +69,6 @@ class VideoSieveWatchTab < VideoSieve
     raise Forki::VideoSieveFailedError.new(sieve_class: "VideoSieveWatchTab") if video_preview_image_url.nil?
     video_preview_image_urls = [video_preview_image_url]
 
-    if !video_object["feedback_context"].nil?
-      feedback_object = video_object["feedback_context"]["feedback_target_with_context"]
-    else
-      feedback_object = graphql_objects.find { |go| !go.dig("feedback", "total_comment_count").nil? }
-      feedback_object = feedback_object["feedback"] if feedback_object.has_key?("feedback")
-    end
-
     begin
       profile_link = video_object["attachments"].first["media"]["owner"]["url"]
     rescue StandardError
@@ -87,14 +80,27 @@ class VideoSieveWatchTab < VideoSieve
       profile_link = filtered_json["attachments"].first["media"]["creation_story"]["comet_sections"]["title"]["story"]["actors"].first["url"]
     end
 
-    begin
-      if feedback_object.key?("cannot_see_top_custom_reactions")
-        reactions = feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
-      else
-        reactions = feedback_object["top_reactions"]["edges"]
+    if !video_object["feedback_context"].nil?
+      feedback_object = video_object["feedback_context"]["feedback_target_with_context"]
+    else
+      feedback_object = graphql_objects.find { |go| !go.dig("feedback", "total_comment_count").nil? }
+    end
+
+    reactions = feedback_object.dig("fb_reel_react_button", "story", "feedback", "unified_reactors", "count").nil?
+
+    if reactions.nil?
+      begin
+        feedback_object = feedback_object["feedback"] if feedback_object.has_key?("feedback")
+
+        if feedback_object.key?("cannot_see_top_custom_reactions")
+          reactions = feedback_object["cannot_see_top_custom_reactions"]["top_reactions"]["edges"]
+        else
+          reactions = feedback_object["top_reactions"]["edges"]
+        end
+      rescue StandardError
+        reactions = feedback_object["unified_reactors"]["count"] if feedback_object.has_key?("unified_reactors")
+        reactions = feedback_object["top_reactions"]["edges"] if feedback_object.has_key?("top_reactions")
       end
-    rescue StandardError
-      reactions = feedback_object["unified_reactors"]["count"]
     end
 
     {

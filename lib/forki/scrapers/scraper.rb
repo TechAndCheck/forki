@@ -117,6 +117,8 @@ module Forki
 
       url ||= "https://www.facebook.com"
 
+      load_saved_cookies
+
       page.driver.browser.navigate.to(url)  # Visit the url passed in or the facebook homepage if nothing is
 
       # Look for "login_form" box, which throws an error if not found. So we catch it and run the rest of the tests
@@ -176,6 +178,8 @@ module Forki
 
       # Now we wait awhile, hopefully to slow down scraping
       @logged_in = true
+
+      save_cookies
       sleep(rand * 10.3)
     end
 
@@ -268,6 +272,31 @@ module Forki
       end
 
       number.to_i
+    end
+
+    def save_cookies
+      puts "Saving cookies..."
+      cookies_json = page.driver.browser.manage.all_cookies.to_json
+      File.write("forki_cookies.json", cookies_json)
+    end
+
+    def load_saved_cookies
+      return unless File.exist?("forki_cookies.json")
+
+      cookies_json = File.read("forki_cookies.json")
+      cookies = JSON.parse(cookies_json, symbolize_names: true)
+      cookies.each do |cookie|
+        cookie[:expires] = Time.parse(cookie[:expires]) unless cookie[:expires].nil?
+        begin
+          puts "Loading coookies..."
+          page.driver.browser.manage.add_cookie(cookie)
+
+        rescue StandardError => e
+          puts "Error loading cookies: #{e}"
+        end
+      end
+      puts "Refreshing page..."
+      page.driver.browser.navigate.refresh
     end
   end
 end

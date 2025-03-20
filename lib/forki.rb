@@ -13,7 +13,18 @@ require_relative "forki/scrapers/sieves/video_sieves/video_sieve"
 module Forki
   extend Configuration
 
-  @@forki_logger = Logger.new(STDOUT)
+  require "semantic_logger"
+
+  # Set the global default log level
+  SemanticLogger.default_level = :trace
+
+  # Log to a file, and use the colorized formatter
+  # SemanticLogger.add_appender(file_name: "development.log", formatter: :color)
+
+  # Create an instance of a logger
+  # Add the application/class name to every log message
+  @@forki_logger = SemanticLogger["Forki"]
+
 
   class Error < StandardError; end
   class RetryableError < Error; end

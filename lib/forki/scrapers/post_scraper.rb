@@ -789,18 +789,22 @@ module Forki
       # Occasionally there will be a post that's public, but an account isn't and you need to login first
       post_data = nil
       2.times do |i|
+        # login
         validate_and_load_page(url)
+        sleep(10)
         graphql_strings = find_graphql_data_strings(page.html)
 
-        scraped_post_data = extract_post_data(graphql_strings)
-        if post_data.nil?
-          post_data = scraped_post_data
-        else
-          # TODO: we should make it so that if the profile link is empty, we don't rescrape the entire post
-          post_data[:profile_link] = scraped_post_data[:profile_link]
-        end
+        begin
+          scraped_post_data = extract_post_data(graphql_strings)
+          if post_data.nil?
+            post_data = scraped_post_data
+          else
+            # TODO: we should make it so that if the profile link is empty, we don't rescrape the entire post
+            post_data[:profile_link] = scraped_post_data[:profile_link]
+          end
 
-        break unless post_data[:profile_link].respond_to?(:empty?) ? post_data[:profile_link].empty? : !post_data[:profile_link]
+          break unless post_data[:profile_link].respond_to?(:empty?) ? post_data[:profile_link].empty? : !post_data[:profile_link]
+        rescue Forki::ContentUnavailableError; end
 
         login if i.zero?
       end

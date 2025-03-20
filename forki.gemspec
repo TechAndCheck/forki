@@ -37,6 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "oj" # A faster JSON parser/loader than stdlib
   spec.add_dependency "selenium-webdriver" # Webdriver selenium
   spec.add_dependency "zorki" # For scraping instagram pages
+  spec.add_dependency "semantic_logger" # For logging
 
   spec.add_development_dependency "thor" # For the generator
   spec.add_development_dependency "solargraph" # For the language server
