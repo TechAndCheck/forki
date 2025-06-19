@@ -268,7 +268,7 @@ class PostTest < Minitest::Test
 
   def test_reel
     # https://www.facebook.com/reel/809749953859034
-    post = Forki::Post.lookup("https://www.facebook.com/reel/809749953859034").first
+    post = Forki::Post.lookup("HTTPS://www.facebook.com/REEL/2823760637824421").first
     assert_not_nil(post)
 
     post.video_files.each do |image|

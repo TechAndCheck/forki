@@ -163,7 +163,11 @@ module Forki
       login_buttons = login_form.all("div", text: "Log in", wait: 5) if login_buttons.empty?
 
       if login_buttons.empty?
-        login_form.click_button("Log In")
+        begin
+          login_form.click_button("Log in")
+        rescue Capybara::ElementNotFound
+          login_form.click_button("Log In")
+        end
       else
         login_buttons.each do |button|
           if button.text == "Log In" || button.text == "Log in"

@@ -812,6 +812,7 @@ module Forki
       begin
         post_data[:url] = url
       rescue StandardError
+        raise ContentUnavailableError
       end
 
       5.times do
