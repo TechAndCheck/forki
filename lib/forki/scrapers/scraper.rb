@@ -160,12 +160,13 @@ module Forki
 
       # This is a pain because some pages just `click_button` would work, but some won't
       login_buttons = login_form.all("div", text: "Log In", wait: 5)
+      login_buttons = login_form.all("div", text: "Log in", wait: 5) if login_buttons.empty?
 
       if login_buttons.empty?
         login_form.click_button("Log In")
       else
         login_buttons.each do |button|
-          if button.text == "Log In"
+          if button.text == "Log In" || button.text == "Log in"
             button.click
             break
           end

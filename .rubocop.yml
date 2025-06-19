@@ -69,3 +69,6 @@ Layout/EmptyLinesAroundAccessModifier:
 # We're not a Rails app, just using their style sheet
 Rails/AssertNot:
   Enabled: false
+
+Minitest/AssertPredicate:
+  Enabled: false

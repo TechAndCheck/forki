@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    forki (0.2.39)
+    forki (0.2.40)
       apparition
       capybara
       oj
@@ -203,6 +203,7 @@ GEM
 PLATFORMS
   arm64-darwin-21
   arm64-darwin-22
+  arm64-darwin-23
 
 DEPENDENCIES
   byebug

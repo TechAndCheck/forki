@@ -809,7 +809,10 @@ module Forki
         login if i.zero?
       end
 
-      post_data[:url] = url
+      begin
+        post_data[:url] = url
+      rescue StandardError
+      end
 
       5.times do
         begin

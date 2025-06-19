@@ -562,4 +562,22 @@ class PostTest < Minitest::Test
       assert !post.text&.empty?
     end
   end
+
+  def test_a_reel_works_4
+    posts = Forki::Post.lookup("https://www.facebook.com/reel/1836793750186568")
+    assert_not_nil(posts)
+
+    posts.each do |post|
+      post.video_files.each do |video|
+        assert File.size(video) > 1000
+      end
+
+      post.video_preview_image_files.each do |image|
+        assert File.size(image) > 1000
+      end
+
+      assert_not_nil(post.created_at)
+      assert !post.text&.empty?
+    end
+  end
 end
